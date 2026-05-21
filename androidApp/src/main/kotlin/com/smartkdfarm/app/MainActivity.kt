@@ -14,9 +14,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        val viewModel = SharedContainer().authViewModel()
+        val container = SharedContainer()
+        val authViewModel = container.authViewModel()
+        val livestockViewModel = container.livestockViewModel()
         setContent {
-            AuthAppScreen(viewModel = viewModel)
+            AuthAppScreen(
+                viewModel = authViewModel,
+                livestockViewModel = livestockViewModel,
+            )
         }
     }
 }

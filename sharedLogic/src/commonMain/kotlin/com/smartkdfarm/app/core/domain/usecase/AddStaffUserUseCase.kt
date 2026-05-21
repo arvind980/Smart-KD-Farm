@@ -32,19 +32,19 @@ class AddStaffUserUseCase(
 
         when (registration.role) {
             UserRole.FARMER -> {
-                if (actor.role != UserRole.MANAGER && actor.role != UserRole.DAIRY_MAN) {
+                if (actor.role != UserRole.ADMIN && actor.role != UserRole.DAIRY_MAN) {
                     throw AuthorizationException(
-                        "Only MANAGER or DAIRY_MAN can register a FARMER."
+                        "Only ADMIN or DAIRY_MAN can register a FARMER."
                     )
                 }
             }
 
-            UserRole.MANAGER,
+            UserRole.ADMIN,
             UserRole.DAIRY_MAN,
             UserRole.LABOUR,
             -> {
-                if (actor.role != UserRole.MANAGER) {
-                    throw AuthorizationException("Only MANAGER can add staff users.")
+                if (actor.role != UserRole.ADMIN) {
+                    throw AuthorizationException("Only ADMIN can add staff users.")
                 }
             }
         }

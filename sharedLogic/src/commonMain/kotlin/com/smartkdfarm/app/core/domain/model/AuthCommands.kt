@@ -11,12 +11,10 @@ data class LoginCredentials(
 @Serializable
 data class FarmRegistrationCommand(
     val farmName: String,
-    val ownerName: String,
-    val primaryPhoneNumber: String,
-    val managerName: String,
-    val managerEmail: String,
-    val managerPassword: String,
-    val managerPhoneNumber: String,
+    val adminName: String,
+    val adminEmail: String,
+    val adminPassword: String,
+    val adminPhoneNumber: String,
     val location: FarmLocation,
     val landArea: AreaConfiguration,
     val notes: String? = null,

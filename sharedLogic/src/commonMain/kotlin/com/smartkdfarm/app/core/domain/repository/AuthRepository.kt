@@ -13,7 +13,7 @@ interface AuthRepository {
 
     suspend fun login(credentials: LoginCredentials): User
 
-    suspend fun registerInitialManager(
+    suspend fun registerInitialAdmin(
         farmId: String,
         fullName: String,
         email: String,

@@ -27,28 +27,28 @@ final class AuthScreenModel: ObservableObject {
     }
 
     func login(mobileNumber: String, password: String) {
-        viewModel.login(mobileNumber: mobileNumber, password: password)
+        let email = mobileNumber.contains("@") ? mobileNumber : "\(mobileNumber.filter { $0.isNumber || $0 == "+" })@mail.com"
+        viewModel.login(mobileNumber: email, password: password)
     }
 
     func registerFarm(
         farmName: String,
-        ownerName: String,
-        managerName: String,
-        managerEmail: String,
-        managerPassword: String,
+        adminName: String,
+        adminPassword: String,
         phoneNumber: String,
         village: String,
         district: String,
         stateName: String
     ) {
+        let cleanPhone = phoneNumber.filter { $0.isNumber || $0 == "+" }
+        let formattedEmail = "\(cleanPhone)@mail.com"
+
         let command = FarmRegistrationCommand(
             farmName: farmName,
-            ownerName: ownerName,
-            primaryPhoneNumber: phoneNumber,
-            managerName: managerName,
-            managerEmail: managerEmail,
-            managerPassword: managerPassword,
-            managerPhoneNumber: phoneNumber,
+            adminName: adminName,
+            adminEmail: formattedEmail,
+            adminPassword: adminPassword,
+            adminPhoneNumber: phoneNumber,
             location: FarmLocation(
                 village: village,
                 district: district,
@@ -79,5 +79,31 @@ final class AuthScreenModel: ObservableObject {
 
     func logout() {
         viewModel.logout()
+    }
+}
+
+@MainActor
+final class LivestockScreenModel: ObservableObject {
+    @Published private(set) var state: LivestockUiState
+
+    private let viewModel: LivestockViewModel
+    private var handle: CloseableHandle?
+
+    init(container: SharedContainer = SharedContainer()) {
+        container.start()
+        let viewModel = container.livestockViewModel()
+        self.viewModel = viewModel
+        self.state = viewModel.currentState()
+        self.handle = viewModel.startObserving { [weak self] latestState in
+            guard let latestState else { return }
+            Task { @MainActor in
+                self?.state = latestState
+            }
+        }
+    }
+
+    deinit {
+        handle?.close()
+        viewModel.dispose()
     }
 }

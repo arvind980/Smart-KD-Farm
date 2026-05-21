@@ -32,8 +32,12 @@ class FirebaseAuthRepository : AuthRepository {
     }
 
     override suspend fun login(credentials: LoginCredentials): User {
-        val mobileNumber = normalizePhoneNumber(credentials.mobileNumber)
-        val email = resolveEmailForMobile(mobileNumber)
+        val email = if (credentials.mobileNumber.contains("@")) {
+            credentials.mobileNumber
+        } else {
+            formatMobileToEmail(credentials.mobileNumber)
+        }
+        
         try {
             auth.signInWithEmailAndPassword(
                 email = email,
@@ -54,7 +58,7 @@ class FirebaseAuthRepository : AuthRepository {
         return user
     }
 
-    override suspend fun registerInitialManager(
+    override suspend fun registerInitialAdmin(
         farmId: String,
         fullName: String,
         email: String,
@@ -68,12 +72,12 @@ class FirebaseAuthRepository : AuthRepository {
             )
         } catch (throwable: Throwable) {
             throw AuthenticationException(
-                message = throwable.message ?: "Unable to create the manager Firebase Auth account."
+                message = throwable.message ?: "Unable to create the admin Firebase Auth account."
             )
         }
 
         val userId = authResult.user?.uid ?: auth.currentUser?.uid
-            ?: throw AuthenticationException("Firebase Auth did not return a manager uid.")
+            ?: throw AuthenticationException("Firebase Auth did not return an admin uid.")
         val now = TimeProvider.nowEpochMillis()
         val user = User(
             id = userId,
@@ -81,7 +85,7 @@ class FirebaseAuthRepository : AuthRepository {
             fullName = fullName.trim(),
             email = email.trim(),
             phoneNumber = normalizePhoneNumber(phoneNumber),
-            role = UserRole.MANAGER,
+            role = UserRole.ADMIN,
             isActive = true,
             createdAtEpochMillis = now,
             updatedAtEpochMillis = now,
@@ -91,7 +95,7 @@ class FirebaseAuthRepository : AuthRepository {
             usersCollection().document(user.id).set(user.toDocument())
         } catch (throwable: Throwable) {
             throw AuthenticationException(
-                message = throwable.message ?: "Manager account was created, but the user profile could not be stored."
+                message = throwable.message ?: "Admin account was created, but the user profile could not be stored."
             )
         }
 
@@ -127,20 +131,9 @@ class FirebaseAuthRepository : AuthRepository {
             .toDomain()
     }
 
-    private suspend fun resolveEmailForMobile(mobileNumber: String): String {
-        val querySnapshot = usersCollection()
-            .where { "phoneNumber" equalTo mobileNumber }
-            .get()
-
-        val matchingUser = querySnapshot.documents
-            .firstOrNull()
-            ?.data<UserDocument>()
-            ?: throw AuthenticationException("No active account was found for this mobile number.")
-
-        if (!matchingUser.isActive) {
-            throw AuthenticationException("This account has been deactivated.")
-        }
-        return matchingUser.email
+    private fun formatMobileToEmail(mobileNumber: String): String {
+        val clean = mobileNumber.filter { it.isDigit() || it == '+' }
+        return "$clean@mail.com"
     }
 
     private fun normalizePhoneNumber(input: String): String =

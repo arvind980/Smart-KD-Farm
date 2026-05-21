@@ -151,20 +151,39 @@ class AuthViewModel(
         authObservationJob?.cancel()
         authObservationJob = scope.launch {
             authRepository.observeAuthenticatedUser().collectLatest { user ->
-                mutableUiState.value = mutableUiState.value.copy(
-                    status = if (user == null) AuthFlowStatus.SIGNED_OUT else AuthFlowStatus.AUTHENTICATED,
-                    isLoading = false,
-                    currentUser = user,
-                    errorMessage = null,
-                )
+                if (user == null) {
+                    mutableUiState.value = mutableUiState.value.copy(
+                        status = AuthFlowStatus.SIGNED_OUT,
+                        isLoading = false,
+                        currentUser = null,
+                        farmProfile = null,
+                        errorMessage = null,
+                    )
+                } else {
+                    mutableUiState.value = mutableUiState.value.copy(
+                        status = AuthFlowStatus.AUTHENTICATED,
+                        isLoading = false,
+                        currentUser = user,
+                        errorMessage = null,
+                    )
 
-                farmObservationJob?.cancel()
-                val farmId = user?.farmId ?: return@collectLatest
-                farmObservationJob = launch {
-                    val farm = farmRepository.getFarmProfile(farmId)
-                    mutableUiState.value = mutableUiState.value.copy(farmProfile = farm)
-                    farmRepository.observeFarmProfile(farmId).collectLatest { updatedFarm ->
-                        mutableUiState.value = mutableUiState.value.copy(farmProfile = updatedFarm)
+                    farmObservationJob?.cancel()
+                    val farmId = user.farmId
+                    farmObservationJob = launch {
+                        runCatching { farmRepository.getFarmProfile(farmId) }
+                            .onSuccess { farm ->
+                                mutableUiState.value = mutableUiState.value.copy(farmProfile = farm)
+                            }
+                            .onFailure { error ->
+                                mutableUiState.value = mutableUiState.value.copy(
+                                    errorMessage = error.message,
+                                    farmProfile = null,
+                                )
+                            }
+
+                        farmRepository.observeFarmProfile(farmId).collectLatest { updatedFarm ->
+                            mutableUiState.value = mutableUiState.value.copy(farmProfile = updatedFarm)
+                        }
                     }
                 }
             }

@@ -66,11 +66,10 @@ data class FarmLocation(
 data class FarmProfile(
     val id: String,
     val farmName: String,
-    val ownerName: String,
     val primaryPhoneNumber: String,
     val location: FarmLocation,
     val landArea: AreaConfiguration,
-    val managerUserId: String? = null,
+    val adminUserId: String? = null,
     val notes: String? = null,
     val isActive: Boolean = true,
     val createdAtEpochMillis: Long = TimeProvider.nowEpochMillis(),

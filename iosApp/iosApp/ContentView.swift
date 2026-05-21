@@ -3,12 +3,11 @@ import SharedLogic
 
 struct ContentView: View {
     @StateObject private var model = AuthScreenModel()
+    @StateObject private var livestockModel = LivestockScreenModel()
     @State private var mobileNumber = ""
     @State private var password = ""
     @State private var farmName = "Smart KD Farm"
-    @State private var ownerName = "Arvind"
-    @State private var managerName = "Farm Manager"
-    @State private var managerEmail = ""
+    @State private var adminName = ""
     @State private var phoneNumber = ""
     @State private var village = ""
     @State private var district = ""
@@ -52,7 +51,7 @@ struct ContentView: View {
                                 .buttonStyle(.borderedProminent)
                                 .tint(Color(red: 0.29, green: 0.53, blue: 0.26))
                                 .frame(maxWidth: .infinity, alignment: .center)
-                            Text("Use the manager mobile number that was registered with the farm.")
+                            Text("Use the admin mobile number that was registered with the farm.")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
@@ -71,7 +70,27 @@ struct ContentView: View {
                                 Text(accessText(for: role))
                         }
 
-                        if role == .manager || role == .dairyMan {
+                        dairyCard(title: "Pashu Profile") {
+                            livestockSummaryRow
+                            if livestockModel.state.animalCards.isEmpty {
+                                Text("No animal profiles yet. Livestock cards will appear here once profiles are added under this farm.")
+                                    .foregroundStyle(Color(red: 0.36, green: 0.42, blue: 0.36))
+                            } else {
+                                LazyVGrid(
+                                    columns: [
+                                        GridItem(.flexible(), spacing: 12),
+                                        GridItem(.flexible(), spacing: 12)
+                                    ],
+                                    spacing: 12
+                                ) {
+                                    ForEach(livestockModel.state.animalCards, id: \.id) { card in
+                                        livestockCard(card)
+                                    }
+                                }
+                            }
+                        }
+
+                        if role == .admin || role == .dairyMan {
                             dairyCard(title: "Create Staff / Farmer") {
                                     dairyField("Full Name", text: $staffName)
                                     dairyField("Email", text: $staffEmail)
@@ -106,6 +125,11 @@ struct ContentView: View {
                         Text(error)
                             .foregroundStyle(.red)
                     }
+
+                    if let error = livestockModel.state.errorMessage, !error.isEmpty {
+                        Text(error)
+                            .foregroundStyle(.red)
+                    }
                 }
             }
             .padding()
@@ -114,7 +138,7 @@ struct ContentView: View {
             wholeScreenBackground
         )
         .overlay {
-            if model.state.isLoading {
+            if model.state.isLoading || livestockModel.state.isLoading {
                 ProgressView()
             }
         }
@@ -125,37 +149,33 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 20) {
                 screenTitle(
                     title: "Create\nFarm",
-                    subtitle: "Register the farm, location, and primary manager in one dedicated setup screen."
+                    subtitle: "Register the farm, location, and primary admin in one dedicated setup screen."
                 )
 
                 dairyCard(title: "Farm Setup") {
                     dairyField("Farm Name", text: $farmName)
-                    dairyField("Owner Name", text: $ownerName)
                     Text("Farm Location")
                         .font(.headline)
                         .foregroundStyle(Color(red: 0.16, green: 0.29, blue: 0.15))
                     dairyField("Village", text: $village)
                     dairyField("District", text: $district)
                     dairyField("State", text: $stateName)
-                    Text("Primary Manager")
+                    Text("Primary Admin")
                         .font(.headline)
                         .foregroundStyle(Color(red: 0.16, green: 0.29, blue: 0.15))
-                    dairyField("Manager Name", text: $managerName)
-                    dairyField("Manager Mobile Number", text: $phoneNumber)
+                    dairyField("Admin Name", text: $adminName)
+                    dairyField("Admin Mobile Number", text: $phoneNumber)
                         .keyboardType(.phonePad)
-                    dairyField("Manager Email", text: $managerEmail)
-                    dairySecureField("Manager Password", text: $password)
-                    Text("Manager email is required only for secure account creation. Normal login uses mobile number + password.")
+                    dairySecureField("Admin Password", text: $password)
+                    Text("Admin email is required only for secure account creation. Normal login uses mobile number + password.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
 
                     Button("Register Farm") {
                         model.registerFarm(
                             farmName: farmName,
-                            ownerName: ownerName,
-                            managerName: managerName,
-                            managerEmail: managerEmail,
-                            managerPassword: password,
+                            adminName: adminName,
+                            adminPassword: password,
                             phoneNumber: phoneNumber,
                             village: village,
                             district: district,
@@ -177,7 +197,7 @@ struct ContentView: View {
 
     private func accessText(for role: UserRole?) -> String {
         switch role {
-        case .manager:
+        case .admin:
             return "Full CRUD, staff control, and financial analytics are enabled."
         case .dairyMan:
             return "Outer milk collection, farmer registration, and milking sheet are enabled."
@@ -191,10 +211,78 @@ struct ContentView: View {
     }
 
     private func allowedRoles(for actorRole: UserRole?) -> [UserRole] {
-        if actorRole == .manager {
+        if actorRole == .admin {
             return [.dairyMan, .labour, .farmer]
         }
         return [.farmer]
+    }
+
+    @ViewBuilder
+    private var livestockSummaryRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(livestockModel.state.statusSummary, id: \.label) { summary in
+                    Text("\(summary.label) \(summary.count)")
+                        .font(.caption.bold())
+                        .foregroundStyle(color(from: summary.colorHex))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(color(from: summary.colorHex).opacity(0.14))
+                        .overlay(
+                            Capsule()
+                                .stroke(color(from: summary.colorHex).opacity(0.3), lineWidth: 1)
+                        )
+                        .clipShape(Capsule())
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func livestockCard(_ card: AnimalCardUiModel) -> some View {
+        let accent = color(from: card.statusColorHex)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(card.tagNumber)
+                        .font(.headline.bold())
+                        .foregroundStyle(Color(red: 0.16, green: 0.29, blue: 0.15))
+                    Text(card.breed)
+                        .font(.subheadline)
+                        .foregroundStyle(Color(red: 0.36, green: 0.42, blue: 0.36))
+                }
+                Spacer(minLength: 8)
+                Text(card.statusLabel)
+                    .font(.caption.bold())
+                    .foregroundStyle(accent)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(accent.opacity(0.14))
+                    .clipShape(Capsule())
+            }
+
+            Text(card.ageLabel)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color(red: 0.16, green: 0.29, blue: 0.15))
+            Text(card.purchasePriceLabel)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(Color(red: 0.16, green: 0.29, blue: 0.15))
+            Text(card.breedingTimelineLabel)
+                .font(.caption)
+                .foregroundStyle(Color(red: 0.36, green: 0.42, blue: 0.36))
+            Text(card.healthHeadline)
+                .font(.caption)
+                .foregroundStyle(Color(red: 0.36, green: 0.42, blue: 0.36))
+        }
+        .frame(maxWidth: .infinity, minHeight: 170, alignment: .topLeading)
+        .padding(16)
+        .background(.white.opacity(0.96))
+        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .stroke(accent.opacity(0.28), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.06), radius: 10, x: 0, y: 6)
     }
 
     @ViewBuilder
@@ -276,6 +364,17 @@ struct ContentView: View {
                 .offset(x: -90, y: 205)
         }
         .ignoresSafeArea()
+    }
+
+    private func color(from hex: String) -> Color {
+        let clean = hex.replacingOccurrences(of: "#", with: "")
+        guard let value = UInt(clean, radix: 16) else {
+            return Color(red: 0.49, green: 0.71, blue: 0.36)
+        }
+        let red = Double((value >> 16) & 0xFF) / 255.0
+        let green = Double((value >> 8) & 0xFF) / 255.0
+        let blue = Double(value & 0xFF) / 255.0
+        return Color(red: red, green: green, blue: blue)
     }
 }
 

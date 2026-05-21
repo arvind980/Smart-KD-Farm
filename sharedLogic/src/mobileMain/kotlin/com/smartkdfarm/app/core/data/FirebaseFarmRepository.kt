@@ -42,6 +42,6 @@ class FirebaseFarmRepository : FarmRepository {
     private fun farmsCollection() = firestore.collection(FARMS_COLLECTION)
 
     private companion object {
-        const val FARMS_COLLECTION = "farm_profiles"
+        const val FARMS_COLLECTION = "farms"
     }
 }

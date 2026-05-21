@@ -22,3 +22,5 @@ This project is wired for Firebase on both mobile targets, but you still need to
 - The `.template` files are placeholders only.
 - The real Firebase config files are project-specific and are ignored by git.
 - Firebase Auth and Firestore must also be enabled in the Firebase console.
+- Firestore rules for this app are now defined in `/Users/arvindsingh/Desktop/Smart-KD-Farm/firestore.rules`.
+- Deploy them with `firebase deploy --only firestore:rules` or paste the file into the Firebase Console Rules editor and publish.
