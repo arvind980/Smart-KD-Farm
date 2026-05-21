@@ -30,11 +30,11 @@ dependencies {
 }
 
 android {
-    namespace = "om.smartkdfarm.app"
+    namespace = "com.smartkdfarm.app"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "om.smartkdfarm.app"
+        applicationId = "com.smartkdfarm.app"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

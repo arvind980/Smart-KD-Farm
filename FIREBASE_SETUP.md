@@ -4,14 +4,14 @@ This project is wired for Firebase on both mobile targets, but you still need to
 
 ## Android
 
-1. Register the Android app with package name `om.smartkdfarm.app`.
+1. Register the Android app with package name `com.smartkdfarm.app`.
 2. Download `google-services.json`.
 3. Place it at `/Users/arvind/Desktop/Smart-KD-Farm/androidApp/google-services.json`.
 4. The Android app already applies the `com.google.gms.google-services` plugin.
 
 ## iOS
 
-1. Register the iOS app with bundle id `om.smartkdfarm.app.ios`.
+1. Register the iOS app with bundle id `com.smartkdfarm.app.ios`.
 2. Download `GoogleService-Info.plist`.
 3. Place it at `/Users/arvind/Desktop/Smart-KD-Farm/iosApp/iosApp/GoogleService-Info.plist`.
 4. Firebase startup is handled in `/Users/arvind/Desktop/Smart-KD-Farm/iosApp/iosApp/FirebaseAppDelegate.swift`.

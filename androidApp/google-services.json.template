@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "YOUR_ANDROID_MOBILE_SDK_APP_ID",
         "android_client_info": {
-          "package_name": "om.smartkdfarm.app"
+          "package_name": "com.smartkdfarm.app"
         }
       },
       "oauth_client": [],

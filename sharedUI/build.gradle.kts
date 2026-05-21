@@ -19,7 +19,7 @@ kotlin {
     }
     
     androidLibrary {
-       namespace = "om.smartkdfarm.app.sharedUI"
+       namespace = "com.smartkdfarm.app.sharedUI"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
     

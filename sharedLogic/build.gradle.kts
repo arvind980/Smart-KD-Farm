@@ -28,7 +28,7 @@ kotlin {
     }
     
     androidLibrary {
-       namespace = "om.smartkdfarm.app.sharedLogic"
+       namespace = "com.smartkdfarm.app.sharedLogic"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
     
