@@ -51,8 +51,7 @@ fun AuthAppScreen(viewModel: AuthViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .safeContentPadding() // Ensure it stays within safe areas
-                .padding(horizontal = 16.dp),
+                .safeContentPadding(), // Removed horizontal padding here to control it per-screen
             contentAlignment = Alignment.Center,
         ) {
             when {
@@ -90,6 +89,7 @@ private fun AuthEntryScreen(
     Column(
         modifier = Modifier
             .widthIn(max = 420.dp)
+            .padding(horizontal = 4.dp) // Set to 4dp padding
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -200,6 +200,7 @@ private fun AuthEntryScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FarmRegistrationScreen(
     onRegisterFarm: (FarmRegistrationCommand) -> Unit,
@@ -207,10 +208,9 @@ private fun FarmRegistrationScreen(
     errorMessage: String?,
 ) {
     var farmName by remember { mutableStateOf("Smart KD Farm") }
-    var ownerName by remember { mutableStateOf("Arvind") }
-    var managerName by remember { mutableStateOf("Farm Manager") }
-    var managerEmail by remember { mutableStateOf("") }
-    var managerPhone by remember { mutableStateOf("") }
+    var adminName by remember { mutableStateOf("Farm Admin") }
+    var adminEmail by remember { mutableStateOf("") }
+    var adminPhone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var village by remember { mutableStateOf("") }
     var district by remember { mutableStateOf("") }
@@ -218,83 +218,109 @@ private fun FarmRegistrationScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Row(
+        // Standard Top Bar
+        CenterAlignedTopAppBar(
+            title = {
+                Text(
+                    text = "Join Us",
+                    style = TextStyle(
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        shadow = Shadow(Color.Black.copy(alpha = 0.15f), offset = Offset(0f, 2f), blurRadius = 4f)
+                    )
+                )
+            },
+            navigationIcon = {
+                PremiumIconButton(onClick = onBack)
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent
+            ),
+            modifier = Modifier.padding(horizontal = 4.dp).offset(y = (-16).dp)
+        )
+
+        Column(
             modifier = Modifier
-                .widthIn(max = 480.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .offset(y = (-16).dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 4.dp), // Set to 4dp padding
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            PremiumIconButton(onClick = onBack)
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = "Join Us",
-                style = TextStyle(
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White,
-                    shadow = Shadow(Color.Black.copy(alpha = 0.15f), offset = Offset(0f, 2f), blurRadius = 4f)
-                )
-            )
-        }
+            Spacer(modifier = Modifier.height(8.dp)) // Reduced space from 16 to 8 (effectively less)
 
-        Spacer(modifier = Modifier.height(24.dp))
+            DairyCard(modifier = Modifier.widthIn(max = 480.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        DairyTextField(value = farmName, onValueChange = { farmName = it }, label = "Farm Name", placeholder = "Enter farm name")
+                    }
+                    
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            DairyTextField(value = village, onValueChange = { village = it }, label = "Village", placeholder = "Village name")
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            DairyTextField(value = district, onValueChange = { district = it }, label = "District", placeholder = "District name")
+                        }
+                    }
 
-        DairyCard(modifier = Modifier.widthIn(max = 480.dp)) {
-            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                SectionTitle("FARM IDENTITY")
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    DairyTextField(value = farmName, onValueChange = { farmName = it }, label = "Farm Name", placeholder = "Enter farm name")
-                    DairyTextField(value = ownerName, onValueChange = { ownerName = it }, label = "Owner Name", placeholder = "Enter owner's full name")
-                }
-                
-                SectionTitle("GEOLOCATION")
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        DairyTextField(value = village, onValueChange = { village = it }, label = "Village", placeholder = "Village name")
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        DairyTextField(value = stateName, onValueChange = { stateName = it }, label = "State", placeholder = "Enter state name")
                     }
-                    Box(modifier = Modifier.weight(1f)) {
-                        DairyTextField(value = district, onValueChange = { district = it }, label = "District", placeholder = "District name")
+                    
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        DairyTextField(value = adminName, onValueChange = { adminName = it }, label = "Admin Name", placeholder = "Enter admin name")
+                        DairyTextField(value = adminPhone, onValueChange = { adminPhone = it }, label = "Mobile No.", placeholder = "Admin mobile number", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
+                        DairyTextField(value = password, onValueChange = { password = it }, label = "Password", placeholder = "Set a secure password", visualTransformation = PasswordVisualTransformation())
                     }
-                }
-                
-                SectionTitle("MANAGER ACCOUNT")
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    DairyTextField(value = managerName, onValueChange = { managerName = it }, label = "Full Name", placeholder = "Enter manager name")
-                    DairyTextField(value = managerPhone, onValueChange = { managerPhone = it }, label = "Mobile No.", placeholder = "Manager mobile number", keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
-                    DairyTextField(value = password, onValueChange = { password = it }, label = "Password", placeholder = "Set a secure password", visualTransformation = PasswordVisualTransformation())
-                }
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                PremiumButton(
-                    text = "Register Farm",
-                    onClick = {
-                        onRegisterFarm(
-                            FarmRegistrationCommand(
-                                farmName = farmName,
-                                ownerName = ownerName,
-                                primaryPhoneNumber = managerPhone,
-                                managerName = managerName,
-                                managerEmail = managerEmail,
-                                managerPassword = password,
-                                managerPhoneNumber = managerPhone,
-                                location = FarmLocation(village = village, district = district, state = stateName),
-                                landArea = AreaConfiguration(value = 12.0, unit = AreaUnit.BIGHA)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Register button INSIDE the card
+                    PremiumButton(
+                        text = "Register Farm",
+                        onClick = {
+                            onRegisterFarm(
+                                FarmRegistrationCommand(
+                                    farmName = farmName,
+                                    ownerName = adminName, // Use adminName as ownerName
+                                    primaryPhoneNumber = adminPhone,
+                                    managerName = adminName,
+                                    managerEmail = adminEmail,
+                                    managerPassword = password,
+                                    managerPhoneNumber = adminPhone,
+                                    location = FarmLocation(village = village, district = district, state = stateName),
+                                    landArea = AreaConfiguration(value = 12.0, unit = AreaUnit.BIGHA)
+                                )
                             )
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
+            
+            if (!errorMessage.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(12.dp)) // Reduced from 16 to 12
+                Surface(
+                    color = Color.Red.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.2f))
+                ) {
+                    Text(
+                        text = errorMessage,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
-        
-        Spacer(modifier = Modifier.height(48.dp))
     }
 }
 
@@ -306,7 +332,9 @@ private fun RoleDashboard(
     onClearTransient: () -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        modifier = Modifier.fillMaxSize()
+            .padding(horizontal = 4.dp) // Set to 4dp padding
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(48.dp))
@@ -393,7 +421,11 @@ private fun PremiumIconButton(onClick: () -> Unit) {
                     defaultHeight = 24.dp,
                     viewportWidth = 24f,
                     viewportHeight = 24f
-                ).path(fill = null, stroke = null) {
+                ).path(
+                    fill = androidx.compose.ui.graphics.SolidColor(Color.White),
+                    stroke = androidx.compose.ui.graphics.SolidColor(Color.White),
+                    strokeLineWidth = 0.5f
+                ) {
                     moveTo(20f, 11f)
                     horizontalLineTo(7.83f)
                     lineTo(13.42f, 5.41f)
@@ -457,7 +489,7 @@ private fun DairyCard(
         shadowElevation = 12.dp
     ) {
         Column(
-            modifier = Modifier.padding(28.dp),
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp), // Reduced from 28dp
             content = content
         )
     }
@@ -472,7 +504,7 @@ private fun SectionTitle(text: String) {
             letterSpacing = 1.5.sp,
             color = PremiumGreen
         ),
-        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
+        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp) // Reduced padding
     )
 }
 
@@ -486,7 +518,7 @@ private fun DairyTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: androidx.compose.ui.text.input.VisualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) { // Reduced from 6dp to 4dp (approx 2dp reduction)
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
