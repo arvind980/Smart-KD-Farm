@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart KD Farm — Full App Flowchart</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --forest:  #0D3C3B;
+      --deep:    #082B2B;
+      --mint:    #B9F4CC;
+      --accent:  #3CCF91;
+      --cream:   #F7F2E8;
+      --card:    #1e293b;
+      --ink:     #e2e8f0;
+      --muted:   #94a3b8;
+      --danger:  #f87171;
+      --gold:    #fbbf24;
+      --blue:    #38bdf8;
+      --purple:  #c084fc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a1628;
+      color: var(--ink);
+      padding: 0 0 60px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #082B2B 0%, #0D3C3B 40%, #145B54 100%);
+      padding: 48px 32px 40px;
+      text-align: center;
+      border-bottom: 2px solid #1e3a2a;
+    }
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: #B9F4CC;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+    .hero p {
+      color: #94a3b8;
+      font-size: 1.05rem;
+      max-width: 700px;
+      margin: 0 auto 28px;
+    }
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .badge {
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 1px solid;
+    }
+    .b-green  { background:#14532d33; color:#4ade80; border-color:#4ade80; }
+    .b-blue   { background:#1e3a5f33; color:#38bdf8; border-color:#38bdf8; }
+    .b-purple { background:#4a194233; color:#c084fc; border-color:#c084fc; }
+    .b-orange { background:#78350f33; color:#fbbf24; border-color:#fbbf24; }
+    .b-red    { background:#7f1d1d33; color:#f87171; border-color:#f87171; }
+
+    /* ── TOC nav ── */
+    .toc-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,22,40,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #1e293b;
+      padding: 0 20px;
+      display: flex;
+      overflow-x: auto;
+      gap: 0;
+    }
+    .toc-nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 14px 18px;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+    }
+    .toc-nav a:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ── Page sections ── */
+    .page-section {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 48px 24px 0;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .section-icon {
+      width: 52px; height: 52px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .section-header p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* ── Diagram card ── */
+    .diagram-card {
+      background: var(--card);
+      border: 1px solid #334155;
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+    .diagram-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 6px;
+      padding-left: 10px;
+      border-left: 3px solid var(--blue);
+    }
+    .diagram-card p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+      padding-left: 13px;
+    }
+    .mermaid { width: 100%; overflow-x: auto; }
+
+    /* ── Role cards ── */
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .role-card {
+      background: var(--card);
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 22px;
+    }
+    .role-card .role-name {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .role-card .role-desc {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 14px;
+    }
+    .perm-list { list-style: none; }
+    .perm-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--ink);
+      padding: 5px 0;
+      border-bottom: 1px solid #1e293b;
+    }
+    .perm-list li:last-child { border-bottom: none; }
+    .perm-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Step flow ── */
+    .step-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 28px;
+    }
+    .step-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .step-line {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .step-num {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .step-connector {
+      width: 2px;
+      flex: 1;
+      min-height: 24px;
+      background: linear-gradient(to bottom, #334155, transparent);
+      margin: 2px auto;
+    }
+    .step-body {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 14px 18px;
+      flex: 1;
+      margin-bottom: 12px;
+    }
+    .step-body h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+    .step-body p  { font-size: 0.82rem; color: var(--muted); }
+
+    /* ── 2-col grid ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    @media(max-width:900px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── Cascade table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      margin-bottom: 28px;
+    }
+    th {
+      background: #0f172a;
+      color: var(--blue);
+      text-align: left;
+      padding: 11px 14px;
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #1e293b;
+      color: #cbd5e1;
+    }
+    tr:nth-child(even) td { background: #0f172a33; }
+    .tag {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .tag-green  { background:#14532d; color:#86efac; }
+    .tag-blue   { background:#1e3a5f; color:#93c5fd; }
+    .tag-orange { background:#713f12; color:#fde68a; }
+    .tag-red    { background:#7f1d1d; color:#fca5a5; }
+    .tag-purple { background:#4a1942; color:#e879f9; }
+
+    /* ── Firestore schema box ── */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .schema-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .schema-box .col-path {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 700;
+      font-family: monospace;
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+    .schema-box .field {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      padding: 4px 0;
+      border-bottom: 1px solid #1e293b44;
+      color: var(--ink);
+    }
+    .schema-box .field:last-child { border-bottom: none; }
+    .field-type { color: var(--muted); font-family: monospace; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, #334155, transparent);
+      margin: 52px 0 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <h1>Smart KD Farm — Full App Flowchart</h1>
+  <p>Complete feature flows, user journeys, role-based access paths, data cascades, and Firestore schema for every module in the app.</p>
+  <div class="badge-row">
+    <span class="badge b-green">Kotlin Multiplatform</span>
+    <span class="badge b-blue">Firebase / Firestore</span>
+    <span class="badge b-purple">Compose Multiplatform</span>
+    <span class="badge b-orange">SwiftUI iOS</span>
+    <span class="badge b-red">Clean Architecture</span>
+  </div>
+</div>
+
+<!-- ── Sticky Nav ── -->
+<nav class="toc-nav">
+  <a href="#overview">Overview</a>
+  <a href="#auth">Auth</a>
+  <a href="#dashboard">Dashboard</a>
+  <a href="#livestock">Livestock</a>
+  <a href="#outer">Outer Center</a>
+  <a href="#khata">Khata</a>
+  <a href="#inventory">Inventory</a>
+  <a href="#config">Farm Config</a>
+  <a href="#staff">Staff</a>
+  <a href="#analytics">Analytics</a>
+  <a href="#roles">Roles</a>
+  <a href="#cascade">Data Cascade</a>
+  <a href="#schema">Firestore Schema</a>
+  <a href="#states">App States</a>
+</nav>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     1. OVERVIEW
+     ════════════════════════════════════════════════════════════ -->
+<section id="overview" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#1e3a5f22; color:#38bdf8;">🗺️</div>
+    <div>
+      <h2>App Overview — Complete System Map</h2>
+      <p>How every module connects end-to-end inside Smart KD Farm</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Full System Architecture</h3>
+    <p>Platform → UI → ViewModel → Use Case → Repository → Firebase</p>
+    <div class="mermaid">
+flowchart TD
+    subgraph Platforms["📱 Entry Points"]
+        Android["Android App\n(MainActivity)"]
+        iOS["iOS App\n(ContentView.swift)"]
+        Web["Web App\n(JS / WASM)"]
+    end
+
+    subgraph SharedUI["🎨 Shared UI — Compose Multiplatform"]
+        Console["SmartKdFarmConsole"]
+        subgraph Tabs["7 Feature Tabs"]
+            T1["Dashboard"]
+            T2["Livestock"]
+            T3["Outer Center"]
+            T4["Khata"]
+            T5["Inventory"]
+            T6["Farm Config"]
+            T7["Staff Control"]
+        end
+    end
+
+    subgraph Presentation["🧠 Presentation — ViewModels"]
+        AVM["AuthViewModel"]
+        LVM["LivestockViewModel"]
+        OVM["OperationsViewModel"]
+        ADVM["AdminViewModel"]
+    end
+
+    subgraph Domain["🔵 Domain Layer"]
+        direction LR
+        subgraph UseCases["Use Cases (13)"]
+            UC1["RegisterFarm"]
+            UC2["LoginUser"]
+            UC3["LogInsemination"]
+            UC4["ArchiveAnimal"]
+            UC5["LogHealthEvent 🆕"]
+            UC6["RecordMilkCollection"]
+            UC7["ProduceFeedBatch"]
+            UC8["GeneratePrediction"]
+            UC9["SaveFarmSetup"]
+            UC10["AddStaffUser"]
+            UC11["UpsertStaffProfile"]
+            UC12["DeactivateStaff"]
+        end
+        subgraph Repos["Repository Interfaces (10)"]
+            R1["AuthRepo"]
+            R2["FarmRepo"]
+            R3["LivestockRepo"]
+            R4["OuterCenterRepo"]
+            R5["InventoryRepo"]
+            R6["FinanceRepo"]
+            R7["AdminRepo"]
+            R8["AnalyticsRepo"]
+            R9["FodderRepo 🆕"]
+            R10["WasteRepo 🆕"]
+        end
+        SVC["SmsGatewayService 🆕"]
+    end
+
+    subgraph Firebase["☁️ Firebase Backend"]
+        FBAuth["Firebase Auth"]
+        FBFS["Firestore DB\n(10 collections)"]
+    end
+
+    Android & iOS & Web --> SharedUI
+    SharedUI --> Presentation
+    Presentation --> UseCases
+    UseCases --> Repos
+    UseCases --> SVC
+    Repos --> Firebase
+
+    style Platforms fill:#1a2e4a,stroke:#38bdf8
+    style SharedUI fill:#1a3a2a,stroke:#3CCF91
+    style Presentation fill:#2d1b4e,stroke:#a78bfa
+    style Domain fill:#1e293b,stroke:#f59e0b
+    style Firebase fill:#3a1a1a,stroke:#f87171
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Module Dependency Tree</h3>
+    <p>Which modules trigger actions in other modules automatically</p>
+    <div class="mermaid">
+flowchart LR
+    MC["Milk Collection\n(Outer Center)"] -->|"Auto-posts income"| K["Khata Ledger"]
+    MC -->|"Triggers SMS"| SMS["SMS Gateway\n(MSG91 / Twilio)"]
+    MC -->|"Creates notification"| NOTIF["Farmer Notification\nQueue"]
+
+    FB["Feed Batch\n(Inventory)"] -->|"Deducts stock"| INV["Inventory Items"]
+    FB -->|"Auto-posts expense"| K
+
+    ARCH["Archive Animal\n(Livestock)"] -->|"Posts sale income"| K
+
+    FY["Fodder Yield\n(Inventory)"] -->|"Links to land"| LP["Land Partition\n(Farm Config)"]
+
+    BIO["Biogas Output\n(Inventory)"] -->|"Closes resource loop"| WL["Waste Log"]
+
+    PRED["Supply Prediction\n(Analytics)"] -->|"Reads from"| MC
+    PRED -->|"Reads from"| LVM["Livestock Profiles"]
+
+    style MC   fill:#1e3a5f,stroke:#38bdf8
+    style K    fill:#14532d,stroke:#4ade80
+    style SMS  fill:#3a1a1a,stroke:#f87171
+    style INV  fill:#4a1942,stroke:#e879f9
+    style PRED fill:#1c1917,stroke:#a8a29e
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     2. AUTH FLOW
+     ════════════════════════════════════════════════════════════ -->
+<section id="auth" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#065f4622; color:#34d399;">🔐</div>
+    <div>
+      <h2>Authentication &amp; Farm Registration</h2>
+      <p>How a new farm gets set up, and how users log in with role-based routing</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Complete Auth + Registration Flow</h3>
+    <p>From first-launch to role-based dashboard access</p>
+    <div class="mermaid">
+flowchart TD
+    START([App Launch]) --> CHECK{User session\nexists?}
+    CHECK -->|Yes| RESTORE[Restore session\nfrom Firebase Auth]
+    CHECK -->|No| AUTH_SCREEN[Show Auth Screen]
+
+    RESTORE --> ROLE_ROUTE
+
+    AUTH_SCREEN --> CHOICE{New or\nReturning?}
+
+    CHOICE -->|New Farm| REG[Farm Registration\nScreen]
+    REG --> F1[Enter Farm Name\n+ Location]
+    F1 --> F2[Enter Admin Name\n+ Mobile + Password]
+    F2 --> F3[RegisterFarmUseCase]
+    F3 --> F4[Firebase Auth\ncreatUserWithEmail]
+    F4 --> F5[Save FarmProfile\nto Firestore]
+    F5 --> F6[Save User doc\nas ADMIN role]
+    F6 --> AUTO_LOGIN[Auto-login\nas Admin]
+    AUTO_LOGIN --> ROLE_ROUTE
+
+    CHOICE -->|Returning| LOGIN[Login Screen]
+    LOGIN --> L1[Enter Mobile + Password]
+    L1 --> L2[LoginUserUseCase]
+    L2 --> L3[Firebase Auth\nsignInWithEmail]
+    L3 --> L4{Auth success?}
+    L4 -->|No| L5[Show Error\nWrong credentials]
+    L5 --> LOGIN
+    L4 -->|Yes| L6[Load User doc\nfrom Firestore]
+    L6 --> L7[Load FarmProfile\nfrom Firestore]
+
+    L7 --> ROLE_ROUTE{Route by Role}
+    ROLE_ROUTE -->|ADMIN| ADMIN_DASH[Full Dashboard\n7 tabs unlocked]
+    ROLE_ROUTE -->|DAIRY_MAN| DM_DASH[Dashboard\n+ Outer Center\n+ Livestock]
+    ROLE_ROUTE -->|LABOUR| LAB_DASH[Dashboard\n+ Inventory\n+ Livestock view]
+    ROLE_ROUTE -->|FARMER| FAR_DASH[Personal Milk\nLedger only]
+
+    style START fill:#065f46,stroke:#34d399
+    style ROLE_ROUTE fill:#1e3a5f,stroke:#38bdf8
+    style F3 fill:#2d1b4e,stroke:#a78bfa
+    style L2 fill:#2d1b4e,stroke:#a78bfa
+    style L4 fill:#3a1a1a,stroke:#f87171
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h3>RegisterFarmUseCase Logic</h3>
+      <p>Step-by-step what happens inside the use case</p>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-line">
+            <div class="step-num" style="background:#065f46;color:#86efac">1</div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="step-body">
+            <h4 style="color:#86efac">Validate Input</h4>
+            <p>Farm name, admin name, phone, password — must all be non-blank. Email auto-generated as phone@mail.com.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-line">
+            <div class="step-num" style="background:#1e3a5f;color:#93c5fd">2</div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="step-body">
+            <h4 style="color:#93c5fd">Firebase Auth</h4>
+            <p>Create Firebase Auth user with email+password. Returns UID.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-line">
+            <div class="step-num" style="background:#4a1942;color:#e879f9">3</div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="step-body">
+            <h4 style="color:#e879f9">Save FarmProfile</h4>
+            <p>Write FarmProfile doc to Firestore with farm name, location, land area, adminUserId.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-line">
+            <div class="step-num" style="background:#713f12;color:#fde68a">4</div>
+          </div>
+          <div class="step-body">
+            <h4 style="color:#fde68a">Save Admin User</h4>
+            <p>Write User doc with role=ADMIN, farmId, phone, fullName. Farm is now operational.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h3>Session State Machine</h3>
+      <p>How AuthUiState transitions during auth lifecycle</p>
+      <div class="mermaid">
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Loading : login() / registerFarm()
+    Loading --> Authenticated : Firebase success
+    Loading --> Error : Firebase failure
+    Error --> Loading : retry
+    Authenticated --> Idle : logout()
+    Authenticated --> Authenticated : token refresh
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     3. DASHBOARD
+     ════════════════════════════════════════════════════════════ -->
+<section id="dashboard" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#1e3a5f22; color:#38bdf8;">📊</div>
+    <div>
+      <h2>Dashboard</h2>
+      <p>Real-time KPIs, alerts, role snapshot, and quick actions</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Dashboard Data Assembly Flow</h3>
+    <p>How the dashboard composes data from multiple modules on load</p>
+    <div class="mermaid">
+flowchart LR
+    LOGIN[User logs in] --> OBSERVE[AnalyticsRepository\nobserveDashboardAlerts]
+    OBSERVE --> ALERT_CARD[Critical Alerts Banner]
+
+    LOGIN --> KPI[AnalyticsRepository\ngetKpiSnapshot]
+    KPI --> KPI_CARDS[KPI Cards\nMilk / Animals / P&L]
+
+    LOGIN --> PRED[AnalyticsRepository\ngetPredictions]
+    PRED --> CHART[Lactation Curve\n+ Supply Chart]
+
+    LOGIN --> LIVESTOCK[LivestockRepository\ngetLivestock]
+    LIVESTOCK --> HEALTH[Health Alert Pills]
+    LIVESTOCK --> STATUS[Status Summary\nMilking / Pregnant / Sick]
+
+    KPI_CARDS & ALERT_CARD & CHART & STATUS --> DASH[Dashboard Screen\nRendered]
+
+    DASH --> Q1["Quick Action: + Doodh Entry → Outer Center tab"]
+    DASH --> Q2["Quick Action: + Expense → Khata tab"]
+    DASH --> Q3["Quick Action: Batch Feed → Inventory tab"]
+    DASH --> Q4["Quick Action: Log Health → Livestock tab"]
+
+    style LOGIN fill:#065f46,stroke:#34d399
+    style DASH  fill:#1e3a5f,stroke:#38bdf8
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     4. LIVESTOCK
+     ════════════════════════════════════════════════════════════ -->
+<section id="livestock" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#78350f22; color:#fbbf24;">🐄</div>
+    <div>
+      <h2>Livestock Management</h2>
+      <p>Animal profiles, breeding timeline, health logs, and archival</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Full Livestock Feature Flow</h3>
+    <p>From adding an animal to archiving it — every action and its outcome</p>
+    <div class="mermaid">
+flowchart TD
+    subgraph Add["➕ Add Animal"]
+        A1[Enter Tag Number\n+ Breed + Age\n+ Purchase Price]
+        A1 --> A2[Set Initial Status\nMILKING / DRY / PREGNANT / SICK]
+        A2 --> A3[upsertAnimal\nFirestore write]
+        A3 --> A4[Appears in\nLivestock Grid]
+    end
+
+    subgraph View["👁️ View Animal Card"]
+        A4 --> CLICK[Tap card → AnimalDetailScreen]
+        CLICK --> B1[Profile Card\nTag · Breed · Age · Price]
+        CLICK --> B2[Breeding Timeline\nInseminated → PD Due → Calving]
+        CLICK --> B3[Health Log History\nLatest severity indicator]
+    end
+
+    subgraph AI["💉 Log AI / Insemination"]
+        B1 --> AI1[Tap 'Log AI' button]
+        AI1 --> AI2[Enter AI Date]
+        AI2 --> AI3[LogInseminationUseCase]
+        AI3 --> AI4[Auto-calc PD Due\nAI date + 60 days]
+        AI4 --> AI5[Auto-calc Calving\nAI date + 285 days]
+        AI5 --> AI6[Save BreedingLog\nto AnimalProfile]
+        AI6 --> AI7[Status → PREGNANT]
+    end
+
+    subgraph HEALTH["🩺 Log Health Event"]
+        B1 --> H1[Tap 'Health Log'\nor expand form]
+        H1 --> H2[Select type\nDeworming / Vaccination\nMastitis / General]
+        H2 --> H3[Add notes + treatment]
+        H3 --> H4[LogHealthEventUseCase 🆕]
+        H4 --> H5[Validate title non-blank]
+        H5 --> H6[Append HealthLog\nto AnimalProfile]
+        H6 --> H7[Severity: STABLE /\nOBSERVATION / CRITICAL]
+        H7 --> H8[Health headline\nupdates on card]
+    end
+
+    subgraph ARCH["📦 Archive Animal"]
+        B1 --> AR1[Tap 'Archive' button]
+        AR1 --> AR2[Select reason:\nSOLD / NATURAL_DEATH\nTRANSFERRED / OTHER]
+        AR2 --> AR3[Optional: Sale amount]
+        AR3 --> AR4[ArchiveAnimalUseCase]
+        AR4 --> AR5{Sold?}
+        AR5 -->|Yes| AR6[Post sale income\nto Khata Ledger\nauto-write]
+        AR5 -->|No| AR7[Mark isActive=false\narchivedAt timestamp]
+        AR6 --> AR7
+        AR7 --> AR8[Disappears from\nactive grid]
+    end
+
+    style Add    fill:#1e3a2a,stroke:#4ade80
+    style View   fill:#1e3a5f,stroke:#38bdf8
+    style AI     fill:#2d1b4e,stroke:#a78bfa
+    style HEALTH fill:#713f12,stroke:#fbbf24
+    style ARCH   fill:#3a1a1a,stroke:#f87171
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h3>Breeding Timeline Explained</h3>
+      <p>How date auto-calculation works after an AI entry</p>
+      <div class="mermaid">
+gantt
+    title Breeding Timeline (Days from AI)
+    dateFormat X
+    axisFormat %d
+    section Phases
+    Insemination (Day 0)   : milestone, m1, 0, 1d
+    Pregnancy Diagnosis    : active, pd, 60, 15d
+    PD Due Date            : milestone, m2, 75, 1d
+    Gestation Period       : crit, gest, 75, 210d
+    Expected Calving       : milestone, m3, 285, 1d
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h3>Animal Status Flow</h3>
+      <p>Valid status transitions during an animal's lifecycle</p>
+      <div class="mermaid">
+stateDiagram-v2
+    [*] --> MILKING : Add as milking cow
+    [*] --> DRY     : Add as dry cow
+    MILKING --> DRY      : Dry off period
+    DRY --> PREGNANT     : Log AI + confirm
+    PREGNANT --> MILKING : Calving event
+    MILKING --> SICK     : Health log CRITICAL
+    SICK --> MILKING     : Recovery logged
+    MILKING --> ARCHIVED : Sold / Death
+    SICK --> ARCHIVED    : Sold / Death
+    DRY --> ARCHIVED     : Sold / Death
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     5. OUTER CENTER
+     ════════════════════════════════════════════════════════════ -->
+<section id="outer" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#1e3a5f22; color:#38bdf8;">🥛</div>
+    <div>
+      <h2>Outer Center — Milk Collection</h2>
+      <p>Auto-rate calculation, SMS delivery, and farmer payout flow</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Complete Milk Collection → SMS → Ledger Cascade</h3>
+    <p>One milk entry triggers 4 automatic downstream actions</p>
+    <div class="mermaid">
+flowchart TD
+    ENTRY[Dairy Man opens\nOuter Center tab] --> SEARCH[Search farmer by name]
+    SEARCH --> FORM[Fill form:\nFarmer Name + Qty (L) + FAT% + SNF%]
+    FORM --> RATE[Auto Rate Calculation\nRate = BaseRate + FAT bonus − deductions\nTotal = Qty × Rate]
+    RATE --> PREVIEW[Preview: Rate/L and Total amount\nshown before save]
+    PREVIEW --> CONFIRM[Tap 'Record & Send SMS']
+
+    CONFIRM --> UC[RecordMilkCollectionUseCase]
+
+    UC --> V1{Role check\nADMIN or DAIRY_MAN?}
+    V1 -->|No| ERR1[AuthorizationException]
+    V1 -->|Yes| V2{Qty > 0 and\nAmount ≥ 0?}
+    V2 -->|No| ERR2[ValidationException]
+    V2 -->|Yes| SAVE[Save MilkCollectionEntry\nto Firestore]
+
+    SAVE --> P1["① Create FarmerNotification\n(status = QUEUED)"]
+    SAVE --> P2["② Load FarmProfile\nfrom FarmRepository"]
+    P2 --> P3{SMS config\nconfigured & active?}
+    P3 -->|Yes| SMS_SEND["SmsGatewayService.sendSms()\nMSG91 / Fast2SMS / Twilio"]
+    P3 -->|No| SMS_QUEUE[Notification stays QUEUED\nfor manual review]
+    SMS_SEND --> SMS_RESULT{HTTP 200\n& success body?}
+    SMS_RESULT -->|Yes| SMS_SENT[Status → SENT]
+    SMS_RESULT -->|No| SMS_FAIL[Status → FAILED]
+
+    SMS_SENT & SMS_FAIL & SMS_QUEUE --> NOTIF_SAVE[Save FarmerNotification\nwith final status]
+
+    SAVE --> P4["③ FinanceRepository.recordLedgerEntry()\nAuto-post income to Khata"]
+
+    NOTIF_SAVE --> P5["④ UI refreshes:\nCollection appears in list\nFarmer ledger updates\nSMS badge shows"]
+
+    style CONFIRM fill:#065f46,stroke:#34d399
+    style UC      fill:#2d1b4e,stroke:#a78bfa
+    style SMS_SEND fill:#3a1a1a,stroke:#f87171
+    style P4      fill:#14532d,stroke:#4ade80
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h3>Auto Rate Calculation Formula</h3>
+      <p>How FAT/SNF scores translate to per-litre rate</p>
+      <div class="mermaid">
+flowchart TD
+    INPUT[FAT% + SNF% + Qty] --> BASE[Base Rate = ₹30/L]
+    BASE --> FAT_BONUS{"FAT > 5%?\n+₹4 per 0.1% extra"}
+    FAT_BONUS --> SNF_BONUS{"SNF > 8.5%?\n+₹2 per 0.1% extra"}
+    SNF_BONUS --> DEDUCTION{"Quality deductions\nif below threshold"}
+    DEDUCTION --> FINAL_RATE["Final Rate per Litre"]
+    FINAL_RATE --> TOTAL["Total = Rate × Qty\nAutoRateBreakdown saved"]
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h3>Farmer Payout Flow</h3>
+      <p>From collection recorded to payout cleared</p>
+      <div class="mermaid">
+flowchart TD
+    COLL[Collections Recorded\nfor Farmer] --> STATUS_P[Status: PENDING]
+    STATUS_P --> REVIEW[Dairy Man / Admin\nreviews totals]
+    REVIEW --> APPROVE[Tap 'Approve'\nStatus → APPROVED]
+    APPROVE --> PAYOUT[Make physical payment]
+    PAYOUT --> MARK[Tap 'Paid ✓'\nStatus → PAID]
+    MARK --> LEDGER[Khata shows\nIncome confirmed]
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>SMS Gateway Providers — How to Configure</h3>
+    <p>Choose provider, enter API key, activate — then every milk entry auto-sends SMS</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th><th>Setup</th><th>API Key Format</th><th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-green">MSG91</span></td>
+          <td>Enter Auth key + Sender ID (6-char) + Route (4=transactional)</td>
+          <td class="field-type">32-char hex key</td>
+          <td>Best for India bulk SMS</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">Fast2SMS</span></td>
+          <td>Enter Authorization token + optional sender</td>
+          <td class="field-type">JWT token</td>
+          <td>Cheapest India SMS</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-orange">Twilio</span></td>
+          <td>Enter "ACCOUNT_SID:AUTH_TOKEN" combined as API key</td>
+          <td class="field-type">SID:AuthToken</td>
+          <td>WhatsApp + International</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-purple">Custom HTTP</span></td>
+          <td>Enter base URL; app POSTs JSON {to, message, sender}</td>
+          <td class="field-type">Bearer token</td>
+          <td>Own SMS server</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     6. KHATA
+     ════════════════════════════════════════════════════════════ -->
+<section id="khata" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#14532d22; color:#4ade80;">💰</div>
+    <div>
+      <h2>Khata — Finance &amp; Ledger</h2>
+      <p>Automated income/expense entries from all modules + manual ledger</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>All Khata Entry Sources</h3>
+    <p>The ledger is automatically written by 4 different modules</p>
+    <div class="mermaid">
+flowchart LR
+    subgraph AUTO["⚡ Automatic Entries"]
+        MC["Milk Collection\n(Outer Center)"] -->|"Kind: INCOME\nAuto-post"| K
+        ARCH["Animal Archive / Sale\n(Livestock)"] -->|"Kind: INCOME\nSale amount"| K
+        FEED["Feed Batch\n(Inventory)"] -->|"Kind: EXPENSE\nIngredient cost"| K
+    end
+
+    subgraph MANUAL["✍️ Manual Entries"]
+        MAN1["Admin enters\nIncome manually"] -->|"Kind: INCOME\nSource: Manual Khata"| K
+        MAN2["Admin enters\nExpense manually"] -->|"Kind: EXPENSE\nSource: Manual Khata"| K
+    end
+
+    K[(Khata Ledger\nFirestore Collection)]
+
+    K --> SUM_I["Total Income\nAll INCOME entries"]
+    K --> SUM_E["Total Expense\nAll EXPENSE entries"]
+    SUM_I & SUM_E --> PL["P&L = Income − Expense\nPie Chart in Financial Reports"]
+
+    style AUTO   fill:#14532d22,stroke:#4ade80
+    style MANUAL fill:#1e3a5f22,stroke:#38bdf8
+    style K      fill:#1e293b,stroke:#fbbf24
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h3>Manual Entry User Steps</h3>
+      <p>How to add an entry directly from the Khata tab</p>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-line">
+            <div class="step-num" style="background:#14532d;color:#86efac">1</div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="step-body">
+            <h4 style="color:#86efac">Open Khata Tab</h4>
+            <p>See summary cards: Income / Expense / Net P&L at the top.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-line">
+            <div class="step-num" style="background:#14532d;color:#86efac">2</div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="step-body">
+            <h4 style="color:#86efac">Select Type</h4>
+            <p>Toggle between Income (green) or Expense (red) using the segmented picker.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-line">
+            <div class="step-num" style="background:#14532d;color:#86efac">3</div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="step-body">
+            <h4 style="color:#86efac">Enter Details</h4>
+            <p>Title (e.g. "Makka purchase"), Amount (₹). Source = "Manual Khata".</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-line">
+            <div class="step-num" style="background:#14532d;color:#86efac">4</div>
+          </div>
+          <div class="step-body">
+            <h4 style="color:#86efac">Add to Khata</h4>
+            <p>Entry appears in ledger list. P&L summary updates instantly.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h3>Financial Reports View</h3>
+      <p>How the pie chart data is derived</p>
+      <div class="mermaid">
+flowchart TD
+    ENTRIES[All KhataLedgerEntries] --> FILTER_I[Filter kind=INCOME]
+    ENTRIES --> FILTER_E[Filter kind=EXPENSE]
+    FILTER_I --> SUM_I[sumOf amounts → incomeTotal]
+    FILTER_E --> SUM_E[sumOf amounts → expenseTotal]
+    SUM_I --> PIE[PieChartCanvas\nIncome arc = incomeTotal/total × 360°]
+    SUM_E --> PIE
+    PIE --> CENTER[Center shows\n'profit %']
+    SUM_I & SUM_E --> METRICS[RateMetric rows\nIncome / Expense / Net]
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     7. INVENTORY
+     ════════════════════════════════════════════════════════════ -->
+<section id="inventory" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#4a194222; color:#e879f9;">📦</div>
+    <div>
+      <h2>Inventory — Stock, Feed, Fodder &amp; Biogas</h2>
+      <p>End-to-end inventory lifecycle from purchase to biogas output</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Inventory Module — Complete Feature Map</h3>
+    <p>Three sub-modules: Inventory Items → Feed Batch → Fodder Yield → Biogas/Waste</p>
+    <div class="mermaid">
+flowchart TD
+    subgraph ITEMS["📋 Inventory Items"]
+        direction TB
+        I1[Add Item:\nName + Category + Unit\n+ Stock + Reorder Level]
+        I1 --> I2[saveInventoryItem\nupsertInventoryItem in Firestore]
+        I2 --> I3{Stock ≤ Reorder Level?}
+        I3 -->|Yes| I4[⚠️ LOW STOCK badge\nDashboard alert raised]
+        I3 -->|No| I5[Normal stock indicator]
+    end
+
+    subgraph BATCH["🏭 Feed Batch Production"]
+        direction TB
+        B1[Select batch name\n+ output kg]
+        B1 --> B2[Add ingredients\nfrom inventory items]
+        B2 --> B3[ProduceFeedBatchUseCase]
+        B3 --> B4{autoStockDeducted?}
+        B4 -->|Yes| B5[Deduct quantities\nfrom linked items]
+        B4 -->|No| B6[Save batch\npending manual deduction]
+        B5 & B6 --> B7[Batch appears\nin Feed Batches list]
+    end
+
+    subgraph FODDER["🌾 Fodder Yield Tracker 🆕"]
+        direction TB
+        FY1[Select Land Partition]
+        FY1 --> FY2[Enter Crop Type\n+ Yield kg\n+ Harvest Date]
+        FY2 --> FY3[saveFodderYield\nFirebaseFodderRepository]
+        FY3 --> FY4[Card shows harvest record\n+ stock progress bar\n% remaining in store]
+    end
+
+    subgraph BIOGAS["♻️ Biogas & Waste 🆕"]
+        direction TB
+        BG1[Log Dung kg collected]
+        BG1 --> BG2[logBiogasOutput\nDung kg → Biogas m³\n+ Compost kg ready]
+        BG2 --> BG3[saveWasteLog\nFirebaseWasteRepository]
+        BG3 --> BG4[Resource loop closed:\nDung → Gas → Compost]
+        BG4 --> BG5[Summary badges update:\nTotal Biogas m³\nTotal Compost kg]
+    end
+
+    ITEMS --> BATCH
+    BATCH -->|"Ingredient stock deducted"| ITEMS
+    FODDER -->|"Linked to land partition"| CONFIG["Farm Config\nLand Partitions"]
+    BIOGAS -->|"Resource loop metric"| DASH["Dashboard Analytics"]
+
+    style ITEMS  fill:#4a194222,stroke:#e879f9
+    style BATCH  fill:#1e3a5f22,stroke:#38bdf8
+    style FODDER fill:#14532d22,stroke:#4ade80
+    style BIOGAS fill:#065f4622,stroke:#34d399
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h3>How to Use Fodder Yield Tracker</h3>
+      <p>Step-by-step: harvest recording workflow</p>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#14532d;color:#86efac">1</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#86efac">Open Inventory Tab</h4><p>Scroll to "Fodder Yield Tracker" card on the right column.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#14532d;color:#86efac">2</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#86efac">Select Land Partition</h4><p>Pick which plot was harvested (e.g. "Green Fodder Block").</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#14532d;color:#86efac">3</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#86efac">Enter Yield Details</h4><p>Crop type (Napier Grass), Yield in kg, Harvest date.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#14532d;color:#86efac">4</div></div>
+          <div class="step-body"><h4 style="color:#86efac">Track Stock Consumption</h4><p>Update stockFraction (0→1) as fodder is consumed. Progress bar shows remaining %.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h3>Biogas Resource Loop</h3>
+      <p>How dung converts to energy and fertiliser</p>
+      <div class="mermaid">
+flowchart TD
+    COW[🐄 Animals] -->|"Daily dung"| DUNG["Log DUNG\nquantityKg"]
+    DUNG --> DIGESTER["Biogas Digester\nlogBiogasOutput"]
+    DIGESTER --> GAS["⛽ Biogas m³\nUsed for cooking/energy"]
+    DIGESTER --> SLURRY["Slurry\ncompositeReadyKg"]
+    SLURRY --> COMPOST["🌱 Compost\nUsed on land partitions"]
+    COMPOST --> FODDER["🌾 Better Fodder Yield\nFodder Tracker updates"]
+    FODDER --> COW
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     8. FARM CONFIG
+     ════════════════════════════════════════════════════════════ -->
+<section id="config" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#78350f22; color:#fbbf24;">🌿</div>
+    <div>
+      <h2>Farm Config — Land &amp; SMS Setup</h2>
+      <p>Land partition validation and SMS gateway configuration</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Land Partition Validation Rule</h3>
+    <p>The critical architectural constraint: Sum of all partitions must never exceed total farm area</p>
+    <div class="mermaid">
+flowchart TD
+    SETUP[Admin opens Farm Config] --> TOTAL[View Total Farm Area\n e.g. 12 Bigha = 8.5 Acres]
+    TOTAL --> ADD_P[Add Land Partition\nName + Area + Crop/Use + Color]
+    ADD_P --> SAVE[SaveFarmSetupUseCase]
+    SAVE --> CALC[Calculate partitionAreaTotalInAcres\n= SUM of all partitions converted to acres]
+    CALC --> VALID{partitionAreaTotal\n≤ totalArea?}
+    VALID -->|Yes| OK[sumOfPartsValid = true\nValidation: 'VALID'\nSave proceeds]
+    VALID -->|No| FAIL[sumOfPartsValid = false\nValidation: 'EXCEEDS_FARM_AREA'\nError shown to admin]
+    OK --> DONUT[Land Donut Chart\nupdates with colour-coded slices]
+      </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h3>SMS Gateway Setup Steps</h3>
+      <p>Configure once, auto-fires on every milk collection</p>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#1e3a5f;color:#93c5fd">1</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#93c5fd">Open Farm Config → SMS Gateway</h4><p>Currently shows "SMS Disabled" if not yet configured.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#1e3a5f;color:#93c5fd">2</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#93c5fd">Choose Provider</h4><p>Tap MSG91 / Fast2SMS / Twilio / Custom HTTP chip.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#1e3a5f;color:#93c5fd">3</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#93c5fd">Enter API Key + Sender ID</h4><p>For Twilio enter "SID:AuthToken" combined. For MSG91 enter the 32-char key.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#1e3a5f;color:#93c5fd">4</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#93c5fd">Toggle Active + Save</h4><p>Next milk entry auto-sends SMS. Status shows SENT / FAILED in notification queue.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h3>Area Unit Conversion Chain</h3>
+      <p>All units convert through Square Meters internally</p>
+      <div class="mermaid">
+flowchart LR
+    BIGHA["Bigha\n(local)"] -->|"× bighaSqMeters\n(default 2500)"| SQM["Square\nMeters"]
+    ACRE["Acre"] -->|"× 4046.856"| SQM
+    HECTARE["Hectare"] -->|"× 10,000"| SQM
+    SQFT["Square\nFeet"] -->|"× 0.0929"| SQM
+    SQM -->|"÷ target factor"| TARGET["Target\nUnit"]
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     9. STAFF CONTROL
+     ════════════════════════════════════════════════════════════ -->
+<section id="staff" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#7f1d1d22; color:#f87171;">👥</div>
+    <div>
+      <h2>Staff Control — Provisioning &amp; Access</h2>
+      <p>Add staff, assign roles, configure module-level permissions</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Staff Provisioning Flow</h3>
+    <p>How Admin creates accounts for Dairy Man, Labour, and Farmers</p>
+    <div class="mermaid">
+flowchart TD
+    ADMIN[Admin logs in] --> OPEN[Open Staff Control Tab]
+    OPEN --> FORM[Fill form:\nFull Name + Email + Phone + Role]
+
+    FORM --> ROLE{Selected Role}
+    ROLE -->|"DAIRY_MAN"| DM_PERMS["Default permissions:\nOuter Center: MANAGE\nDashboard: VIEW\nKhata: VIEW"]
+    ROLE -->|"LABOUR"| LAB_PERMS["Default permissions:\nInventory: MANAGE\nLivestock: VIEW\nDashboard: VIEW"]
+    ROLE -->|"FARMER"| FAR_PERMS["Default permissions:\nKhata (own): VIEW\nDashboard: VIEW"]
+
+    DM_PERMS & LAB_PERMS & FAR_PERMS --> SUBMIT[Tap 'Submit Provisioning Request']
+    SUBMIT --> UC[AddStaffUserUseCase]
+    UC --> FB_AUTH[Create Firebase Auth account\nwith generated password]
+    FB_AUTH --> SAVE_USER[Save User doc\nwith role + farmId]
+    SAVE_USER --> SAVE_PROFILE[UpsertStaffAccessProfile\nwith permission list]
+    SAVE_PROFILE --> ACTIVE[Staff member can now log in\nand sees their permitted tabs only]
+
+    ACTIVE --> DEACTIVATE{Admin deactivates?}
+    DEACTIVATE -->|Yes| DEACT_UC[DeactivateStaffAccessProfileUseCase\nisActive = false]
+    DEACT_UC --> BLOCKED[User sees 'Account deactivated'\non next login]
+
+    style ADMIN   fill:#7f1d1d,stroke:#f87171
+    style SUBMIT  fill:#065f46,stroke:#34d399
+    style UC      fill:#2d1b4e,stroke:#a78bfa
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Permission Matrix — Who Can Do What</h3>
+    <p>NONE = hidden, VIEW = read-only, MANAGE = create+edit, APPROVE = financial approval</p>
+    <table>
+      <thead>
+        <tr><th>Module</th><th>ADMIN</th><th>DAIRY MAN</th><th>LABOUR</th><th>FARMER</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Dashboard KPIs</td><td><span class="tag tag-green">APPROVE</span></td><td><span class="tag tag-blue">VIEW</span></td><td><span class="tag tag-blue">VIEW</span></td><td><span class="tag tag-blue">VIEW</span></td></tr>
+        <tr><td>Livestock</td><td><span class="tag tag-green">MANAGE</span></td><td><span class="tag tag-blue">VIEW</span></td><td><span class="tag tag-blue">VIEW</span></td><td>—</td></tr>
+        <tr><td>Outer Center</td><td><span class="tag tag-green">MANAGE</span></td><td><span class="tag tag-green">MANAGE</span></td><td>—</td><td>—</td></tr>
+        <tr><td>Khata</td><td><span class="tag tag-orange">APPROVE</span></td><td><span class="tag tag-blue">VIEW</span></td><td>—</td><td>Own only</td></tr>
+        <tr><td>Inventory</td><td><span class="tag tag-green">MANAGE</span></td><td>—</td><td><span class="tag tag-green">MANAGE</span></td><td>—</td></tr>
+        <tr><td>Farm Config</td><td><span class="tag tag-green">MANAGE</span></td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Staff Control</td><td><span class="tag tag-green">MANAGE</span></td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Reports</td><td><span class="tag tag-green">MANAGE</span></td><td><span class="tag tag-blue">VIEW</span></td><td>—</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     10. ANALYTICS
+     ════════════════════════════════════════════════════════════ -->
+<section id="analytics" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#1c191722; color:#a8a29e;">📈</div>
+    <div>
+      <h2>Analytics — Predictions &amp; Alerts</h2>
+      <p>Lactation curve projections, supply forecasting, and alert engine</p>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Supply Prediction Generation</h3>
+    <p>How GenerateSupplyPredictionUseCase produces 4-month forecast</p>
+    <div class="mermaid">
+flowchart TD
+    TRIGGER[Admin taps 'Refresh Predictions'\nor auto-runs on login] --> UC[GenerateSupplyPredictionUseCase]
+    UC --> L1[Load all active animals\nfrom LivestockRepository]
+    UC --> L2[Load past 3 months milk collections\nfrom OuterCenterRepository]
+
+    L1 --> LACTAT["Lactation Curve\n(per animal, weighted by breed)"]
+    L2 --> TREND["Historical Supply Trend\n(average daily litres)"]
+
+    LACTAT & TREND --> BLEND[Blend: weighted average\nbased on PredictionSource]
+
+    BLEND --> MONTHS[Generate 4 PredictionPoints\nM+0, M+1, M+2, M+3]
+    MONTHS --> REVENUE[projectedRevenue = projectedMilkLiters\n× avgRatePerLiter]
+    REVENUE --> SAVE[savePredictions\nto AnalyticsRepository]
+    SAVE --> CHART[Displayed in\ninteractive line chart\nTap point → tooltip shows L + ₹]
+
+    style UC   fill:#2d1b4e,stroke:#a78bfa
+    style SAVE fill:#1e293b,stroke:#94a3b8
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h3>Alert Engine — Severity Logic</h3>
+      <p>How DashboardAlerts are categorised and displayed</p>
+      <div class="mermaid">
+flowchart TD
+    CHECKS[Background check runs\non session start] --> C1{"Any inventory item\nstock ≤ reorderLevel?"}
+    C1 -->|Yes| A1["⚠️ WARNING: Low Stock\n'item name below threshold'"]
+    CHECKS --> C2{"Any animal health log\nSeverity=CRITICAL?"}
+    C2 -->|Yes| A2["🔴 CRITICAL: Health Alert\n'Tag ## — event title'"]
+    CHECKS --> C3{"AI date + 55 days\n≤ today (PD check)?"}
+    C3 -->|Yes| A3["🟡 WARNING: PD Due\n'Tag ## PD due in N days'"]
+    CHECKS --> C4{"Supply prediction\n> 20% spike in M+2?"}
+    C4 -->|Yes| A4["ℹ️ INFO: Supply Spike\n'Plan deals for month M+2'"]
+    A1 & A2 & A3 & A4 --> BANNER["Displayed in\nDashboard Alert Banner\n(red gradient for CRITICAL)"]
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h3>Interactive Chart — How to Use</h3>
+      <p>The tap-to-inspect feature in the analytics chart</p>
+      <div class="step-flow">
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#4a1942;color:#e879f9">1</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#e879f9">Open Dashboard</h4><p>Scroll to Lactation Curve or Supply Prediction chart.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#4a1942;color:#e879f9">2</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#e879f9">Tap a data point</h4><p>Nearest point is detected by X-distance. Dashed vertical indicator appears.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#4a1942;color:#e879f9">3</div><div class="step-connector"></div></div>
+          <div class="step-body"><h4 style="color:#e879f9">Read tooltip</h4><p>Month label, projected litres, projected revenue shown below chart.</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-line"><div class="step-num" style="background:#4a1942;color:#e879f9">4</div></div>
+          <div class="step-body"><h4 style="color:#e879f9">Tap again to dismiss</h4><p>Same point tap clears tooltip. Shows "Tap chart to inspect values" hint.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     11. ROLES QUICK-REF
+     ════════════════════════════════════════════════════════════ -->
+<section id="roles" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#1e3a5f22; color:#38bdf8;">🎭</div>
+    <div>
+      <h2>Role-Based User Journeys</h2>
+      <p>What each user type sees and can do, day-to-day</p>
+    </div>
+  </div>
+
+  <div class="roles-grid">
+    <div class="role-card">
+      <div class="role-name" style="color:#f87171">👑 ADMIN</div>
+      <div class="role-desc">Farm owner. Full access to everything including financial approval and staff management.</div>
+      <ul class="perm-list">
+        <li><div class="perm-dot" style="background:#4ade80"></div>Register / setup farm</li>
+        <li><div class="perm-dot" style="background:#4ade80"></div>All 7 dashboard tabs</li>
+        <li><div class="perm-dot" style="background:#4ade80"></div>Approve farmer payouts</li>
+        <li><div class="perm-dot" style="background:#4ade80"></div>Add / deactivate staff</li>
+        <li><div class="perm-dot" style="background:#4ade80"></div>Configure SMS gateway</li>
+        <li><div class="perm-dot" style="background:#4ade80"></div>Setup land partitions</li>
+        <li><div class="perm-dot" style="background:#4ade80"></div>View all financial reports</li>
+      </ul>
+    </div>
+
+    <div class="role-card">
+      <div class="role-name" style="color:#38bdf8">🥛 DAIRY MAN</div>
+      <div class="role-desc">Operates the outer center. Records milk daily and manages farmers.</div>
+      <ul class="perm-list">
+        <li><div class="perm-dot" style="background:#38bdf8"></div>Record milk collections</li>
+        <li><div class="perm-dot" style="background:#38bdf8"></div>Search / filter farmers</li>
+        <li><div class="perm-dot" style="background:#38bdf8"></div>View FAT/SNF auto-rate</li>
+        <li><div class="perm-dot" style="background:#38bdf8"></div>SMS status monitoring</li>
+        <li><div class="perm-dot" style="background:#38bdf8"></div>Livestock view only</li>
+        <li><div class="perm-dot" style="background:#38bdf8"></div>Khata view (read-only)</li>
+        <li><div class="perm-dot" style="background:#94a3b8"></div>Cannot approve payouts</li>
+      </ul>
+    </div>
+
+    <div class="role-card">
+      <div class="role-name" style="color:#fbbf24">🌾 LABOUR</div>
+      <div class="role-desc">Field worker. Manages inventory and logs livestock health events.</div>
+      <ul class="perm-list">
+        <li><div class="perm-dot" style="background:#fbbf24"></div>Add / update inventory</li>
+        <li><div class="perm-dot" style="background:#fbbf24"></div>Log fodder yields</li>
+        <li><div class="perm-dot" style="background:#fbbf24"></div>Log biogas / waste</li>
+        <li><div class="perm-dot" style="background:#fbbf24"></div>View livestock cards</li>
+        <li><div class="perm-dot" style="background:#fbbf24"></div>Log health events</li>
+        <li><div class="perm-dot" style="background:#94a3b8"></div>Cannot access Khata</li>
+        <li><div class="perm-dot" style="background:#94a3b8"></div>Cannot record milk</li>
+      </ul>
+    </div>
+
+    <div class="role-card">
+      <div class="role-name" style="color:#c084fc">🧑‍🌾 FARMER</div>
+      <div class="role-desc">Milk supplier. Read-only access to own milk ledger and dues.</div>
+      <ul class="perm-list">
+        <li><div class="perm-dot" style="background:#c084fc"></div>View own milk records</li>
+        <li><div class="perm-dot" style="background:#c084fc"></div>View payment status</li>
+        <li><div class="perm-dot" style="background:#c084fc"></div>View dues summary</li>
+        <li><div class="perm-dot" style="background:#c084fc"></div>Receive SMS notifications</li>
+        <li><div class="perm-dot" style="background:#94a3b8"></div>Cannot create entries</li>
+        <li><div class="perm-dot" style="background:#94a3b8"></div>Cannot view other farmers</li>
+        <li><div class="perm-dot" style="background:#94a3b8"></div>Cannot access livestock</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     12. DATA CASCADE
+     ════════════════════════════════════════════════════════════ -->
+<section id="cascade" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#14532d22; color:#4ade80;">⚡</div>
+    <div>
+      <h2>Cross-Module Data Cascade</h2>
+      <p>Every action that automatically triggers writes in other modules</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Trigger Action</th>
+        <th>Module</th>
+        <th>Automatic Side Effects</th>
+        <th>Repos Written</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Record Milk Collection</strong></td>
+        <td><span class="tag tag-blue">Outer Center</span></td>
+        <td>
+          ① Creates FarmerNotification (QUEUED/SENT)<br>
+          ② Sends SMS via gateway if configured<br>
+          ③ Posts INCOME entry to Khata
+        </td>
+        <td>OuterCenterRepo, FinanceRepo</td>
+      </tr>
+      <tr>
+        <td><strong>Produce Feed Batch</strong></td>
+        <td><span class="tag tag-purple">Inventory</span></td>
+        <td>
+          ① Deducts stock from each ingredient item<br>
+          ② Posts EXPENSE entry to Khata (if autoDeduct=true)
+        </td>
+        <td>InventoryRepo, FinanceRepo</td>
+      </tr>
+      <tr>
+        <td><strong>Archive Animal (SOLD)</strong></td>
+        <td><span class="tag tag-orange">Livestock</span></td>
+        <td>
+          ① Posts INCOME entry to Khata with sale amount<br>
+          ② Sets isActive=false on animal profile
+        </td>
+        <td>LivestockRepo, FinanceRepo</td>
+      </tr>
+      <tr>
+        <td><strong>Log Health Event</strong></td>
+        <td><span class="tag tag-orange">Livestock</span></td>
+        <td>
+          ① Appends HealthLog to AnimalProfile<br>
+          ② Status card updates on livestock grid
+        </td>
+        <td>LivestockRepo</td>
+      </tr>
+      <tr>
+        <td><strong>Log Insemination (AI)</strong></td>
+        <td><span class="tag tag-orange">Livestock</span></td>
+        <td>
+          ① Appends BreedingLog<br>
+          ② PD date = AI+60d, Calving = AI+285d auto-calc<br>
+          ③ Status → PREGNANT
+        </td>
+        <td>LivestockRepo</td>
+      </tr>
+      <tr>
+        <td><strong>Log Biogas Output</strong></td>
+        <td><span class="tag tag-green">Inventory</span></td>
+        <td>
+          ① Creates WasteLog with category=BIOGAS_OUTPUT<br>
+          ② Updates biogas/compost summary badges
+        </td>
+        <td>WasteRepo</td>
+      </tr>
+      <tr>
+        <td><strong>Register Farm</strong></td>
+        <td><span class="tag tag-red">Auth</span></td>
+        <td>
+          ① Creates Firebase Auth user<br>
+          ② Writes FarmProfile doc<br>
+          ③ Writes User doc as ADMIN
+        </td>
+        <td>AuthRepo, FarmRepo</td>
+      </tr>
+      <tr>
+        <td><strong>Save Farm Setup</strong></td>
+        <td><span class="tag tag-orange">Farm Config</span></td>
+        <td>
+          ① Validates partition areas ≤ total farm area<br>
+          ② Saves FarmSetupConfig with sumOfPartsValid flag
+        </td>
+        <td>AdminRepo, FarmRepo</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     13. FIRESTORE SCHEMA
+     ════════════════════════════════════════════════════════════ -->
+<section id="schema" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#3a1a1a22; color:#f87171;">🔥</div>
+    <div>
+      <h2>Firestore Database Schema</h2>
+      <p>All collection paths and key fields stored in Firebase</p>
+    </div>
+  </div>
+
+  <div class="schema-grid">
+    <div class="schema-box">
+      <div class="col-path">farms/{farmId}</div>
+      <div class="field"><span>farmName</span><span class="field-type">String</span></div>
+      <div class="field"><span>primaryPhoneNumber</span><span class="field-type">String</span></div>
+      <div class="field"><span>location</span><span class="field-type">FarmLocation</span></div>
+      <div class="field"><span>landArea</span><span class="field-type">AreaConfiguration</span></div>
+      <div class="field"><span>adminUserId</span><span class="field-type">String?</span></div>
+      <div class="field"><span>smsGatewayConfig 🆕</span><span class="field-type">SmsGatewayConfig?</span></div>
+      <div class="field"><span>isActive</span><span class="field-type">Boolean</span></div>
+    </div>
+
+    <div class="schema-box">
+      <div class="col-path">users/{userId}</div>
+      <div class="field"><span>fullName</span><span class="field-type">String</span></div>
+      <div class="field"><span>phoneNumber</span><span class="field-type">String</span></div>
+      <div class="field"><span>email</span><span class="field-type">String</span></div>
+      <div class="field"><span>role</span><span class="field-type">UserRole enum</span></div>
+      <div class="field"><span>farmId</span><span class="field-type">String</span></div>
+      <div class="field"><span>isActive</span><span class="field-type">Boolean</span></div>
+    </div>
+
+    <div class="schema-box">
+      <div class="col-path">farms/{farmId}/livestock/profiles/animals/{animalId}</div>
+      <div class="field"><span>tagNumber</span><span class="field-type">String</span></div>
+      <div class="field"><span>breed</span><span class="field-type">String</span></div>
+      <div class="field"><span>status</span><span class="field-type">AnimalStatus enum</span></div>
+      <div class="field"><span>healthLogs</span><span class="field-type">List&lt;HealthLog&gt;</span></div>
+      <div class="field"><span>breedingLogs</span><span class="field-type">List&lt;BreedingLog&gt;</span></div>
+      <div class="field"><span>isActive</span><span class="field-type">Boolean</span></div>
+      <div class="field"><span>archiveReason</span><span class="field-type">AnimalArchiveReason?</span></div>
+    </div>
+
+    <div class="schema-box">
+      <div class="col-path">farms/{farmId}/outer_center/operations/collections/{id}</div>
+      <div class="field"><span>farmerId</span><span class="field-type">String</span></div>
+      <div class="field"><span>farmerName</span><span class="field-type">String</span></div>
+      <div class="field"><span>session</span><span class="field-type">MilkSession enum</span></div>
+      <div class="field"><span>rateBreakdown</span><span class="field-type">AutoRateBreakdown</span></div>
+      <div class="field"><span>paymentStatus</span><span class="field-type">CollectionPaymentStatus</span></div>
+      <div class="field"><span>smsTriggered</span><span class="field-type">Boolean</span></div>
+    </div>
+
+    <div class="schema-box">
+      <div class="col-path">farms/{farmId}/outer_center/operations/notifications/{id}</div>
+      <div class="field"><span>farmerId</span><span class="field-type">String (phone)</span></div>
+      <div class="field"><span>channel</span><span class="field-type">NotificationChannel</span></div>
+      <div class="field"><span>message</span><span class="field-type">String</span></div>
+      <div class="field"><span>status</span><span class="field-type">QUEUED / SENT / FAILED</span></div>
+      <div class="field"><span>triggeredByRecordId</span><span class="field-type">String</span></div>
+    </div>
+
+    <div class="schema-box">
+      <div class="col-path">farms/{farmId}/inventory/operations/items/{id}</div>
+      <div class="field"><span>name</span><span class="field-type">String</span></div>
+      <div class="field"><span>category</span><span class="field-type">InventoryCategory</span></div>
+      <div class="field"><span>unit</span><span class="field-type">String</span></div>
+      <div class="field"><span>currentStock</span><span class="field-type">Double</span></div>
+      <div class="field"><span>reorderLevel</span><span class="field-type">Double</span></div>
+      <div class="field"><span>vendorName</span><span class="field-type">String?</span></div>
+    </div>
+
+    <div class="schema-box">
+      <div class="col-path">farms/{farmId}/inventory/operations/feed_batches/{id}</div>
+      <div class="field"><span>batchName</span><span class="field-type">String</span></div>
+      <div class="field"><span>totalOutputKg</span><span class="field-type">Double</span></div>
+      <div class="field"><span>ingredients</span><span class="field-type">List&lt;FeedFormulaIngredient&gt;</span></div>
+      <div class="field"><span>autoStockDeducted</span><span class="field-type">Boolean</span></div>
+      <div class="field"><span>producedAtEpochMillis</span><span class="field-type">Long</span></div>
+    </div>
+
+    <div class="schema-box" style="border-color:#4ade8055">
+      <div class="col-path" style="color:#4ade80">🆕 farms/{farmId}/fodder/operations/yields/{id}</div>
+      <div class="field"><span>landPartitionId</span><span class="field-type">String</span></div>
+      <div class="field"><span>partitionName</span><span class="field-type">String</span></div>
+      <div class="field"><span>cropType</span><span class="field-type">String</span></div>
+      <div class="field"><span>yieldKg</span><span class="field-type">Double</span></div>
+      <div class="field"><span>harvestDateEpochMillis</span><span class="field-type">Long</span></div>
+      <div class="field"><span>stockFraction</span><span class="field-type">Float (0.0-1.0)</span></div>
+    </div>
+
+    <div class="schema-box" style="border-color:#4ade8055">
+      <div class="col-path" style="color:#4ade80">🆕 farms/{farmId}/waste/operations/logs/{id}</div>
+      <div class="field"><span>category</span><span class="field-type">WasteCategory enum</span></div>
+      <div class="field"><span>quantityKg</span><span class="field-type">Double</span></div>
+      <div class="field"><span>biogasOutputCubicMeters</span><span class="field-type">Double?</span></div>
+      <div class="field"><span>compositeReadyKg</span><span class="field-type">Double?</span></div>
+      <div class="field"><span>recordedAtEpochMillis</span><span class="field-type">Long</span></div>
+    </div>
+
+    <div class="schema-box">
+      <div class="col-path">farms/{farmId}/finance/ledger/entries/{id}</div>
+      <div class="field"><span>kind</span><span class="field-type">INCOME / EXPENSE</span></div>
+      <div class="field"><span>title</span><span class="field-type">String</span></div>
+      <div class="field"><span>amount</span><span class="field-type">Double</span></div>
+      <div class="field"><span>sourceModule</span><span class="field-type">String</span></div>
+      <div class="field"><span>linkedRecordId</span><span class="field-type">String?</span></div>
+      <div class="field"><span>occurredAtEpochMillis</span><span class="field-type">Long</span></div>
+    </div>
+
+    <div class="schema-box">
+      <div class="col-path">farms/{farmId}/admin/staff/access_profiles/{id}</div>
+      <div class="field"><span>fullName</span><span class="field-type">String</span></div>
+      <div class="field"><span>role</span><span class="field-type">UserRole enum</span></div>
+      <div class="field"><span>phoneNumber</span><span class="field-type">String</span></div>
+      <div class="field"><span>permissions</span><span class="field-type">List&lt;StaffPermission&gt;</span></div>
+      <div class="field"><span>isActive</span><span class="field-type">Boolean</span></div>
+      <div class="field"><span>shiftLabel</span><span class="field-type">String?</span></div>
+    </div>
+
+    <div class="schema-box">
+      <div class="col-path">farms/{farmId}/analytics/predictions/{id}</div>
+      <div class="field"><span>monthIndex</span><span class="field-type">Int</span></div>
+      <div class="field"><span>label</span><span class="field-type">String (e.g. M+1)</span></div>
+      <div class="field"><span>projectedMilkLiters</span><span class="field-type">Double</span></div>
+      <div class="field"><span>projectedRevenue</span><span class="field-type">Double</span></div>
+      <div class="field"><span>source</span><span class="field-type">PredictionSource enum</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     14. APP STATES
+     ════════════════════════════════════════════════════════════ -->
+<section id="states" class="page-section">
+  <div class="section-header">
+    <div class="section-icon" style="background:#2d1b4e22; color:#a78bfa;">🔄</div>
+    <div>
+      <h2>ViewModel State Machines</h2>
+      <p>How UI state flows through StateFlow in each ViewModel</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="diagram-card">
+      <h3>OperationsViewModel State</h3>
+      <p>Tracks loading, all operational data, and errors</p>
+      <div class="mermaid">
+stateDiagram-v2
+    direction LR
+    [*] --> Empty : init
+    Empty --> Loading : auth user detected
+    Loading --> Loaded : refresh() success
+    Loading --> Error : refresh() failure
+    Loaded --> Loading : any action called
+    Error --> Loading : retry / refresh
+    Loaded --> Empty : user logs out
+    Loaded --> Loaded : data sub-update\n(milkCollections,\nfodderYields,\nwasteLogs updated)
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <h3>LivestockViewModel State</h3>
+      <p>Animal grid with reactive updates on health/breeding changes</p>
+      <div class="mermaid">
+stateDiagram-v2
+    direction LR
+    [*] --> Empty
+    Empty --> Loading : session starts
+    Loading --> Loaded : getLivestock success
+    Loaded --> Loading : logInsemination /\narchiveAnimal /\nlogHealthEvent
+    Loading --> Loaded : operation + refresh done
+    Loaded --> Observing : observeLivestock starts
+    Observing --> Observing : Firestore push update\n(real-time grid refresh)
+    Observing --> Empty : logout
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-card">
+    <h3>Complete UI Data Flow — Request to Render</h3>
+    <p>Every tap in the UI follows this exact path to Firestore and back</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant UI as Compose UI / SwiftUI
+    participant VM as ViewModel
+    participant SC as Screen Model (iOS)
+    participant UC as Use Case
+    participant R  as Repository
+    participant FB as Firebase Firestore
+
+    UI  ->>+ VM : User action (tap button)
+    VM  ->>  VM : setState(isLoading=true)
+    VM  ->>  VM : authRepository.currentUser()
+    VM  ->>+ UC : execute(params)
+    UC  ->>  UC : Validate inputs
+    UC  ->>+ R  : persist / query
+    R   ->>+ FB : Firestore set / get
+    FB -->>- R  : DocumentSnapshot
+    R   ->>  R  : Map Document → Domain model
+    R   ->>  R  : Update in-memory cache
+    R  -->>- UC : Domain object
+    UC -->>- VM : Result (success / exception)
+    VM  ->>  VM : setState(isLoading=false, data=result)
+    VM -->>- UI : StateFlow emits new OperationsUiState
+    UI  ->>  UI : recompose() — UI updates
+
+    Note over SC,VM: iOS: @Published observes\nKotlin StateFlow via\nstartObserving callback
+    Note over UC,R:  Cascade writes happen\nwithin the same Use Case\n(e.g. milk → SMS → ledger)
+    </div>
+  </div>
+</section>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor:       '#1e3a5f',
+      primaryTextColor:   '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      lineColor:          '#38bdf8',
+      secondaryColor:     '#1e293b',
+      tertiaryColor:      '#0f172a',
+      background:         '#0a1628',
+      mainBkg:            '#1e293b',
+      nodeBorder:         '#38bdf8',
+      clusterBkg:         '#1e293b',
+      clusterBorder:      '#334155',
+      titleColor:         '#7dd3fc',
+      edgeLabelBackground:'#1e293b',
+      stateBkg:           '#1e293b',
+      stateBorder:        '#334155',
+      labelBackground:    '#1e293b',
+      fontSize:           '14px',
+    }
+  });
+</script>
+</body>
+</html>

@@ -17,10 +17,14 @@ class MainActivity : ComponentActivity() {
         val container = SharedContainer()
         val authViewModel = container.authViewModel()
         val livestockViewModel = container.livestockViewModel()
+        val adminViewModel = container.adminViewModel()
+        val operationsViewModel = container.operationsViewModel()
         setContent {
             AuthAppScreen(
                 viewModel = authViewModel,
                 livestockViewModel = livestockViewModel,
+                adminViewModel = adminViewModel,
+                operationsViewModel = operationsViewModel,
             )
         }
     }

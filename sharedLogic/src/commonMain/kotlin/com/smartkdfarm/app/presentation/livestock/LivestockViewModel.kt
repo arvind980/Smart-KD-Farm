@@ -15,9 +15,11 @@ import kotlinx.datetime.toLocalDateTime
 import com.smartkdfarm.app.core.domain.model.AnimalArchiveReason
 import com.smartkdfarm.app.core.domain.model.AnimalProfile
 import com.smartkdfarm.app.core.domain.model.AnimalStatus
+import com.smartkdfarm.app.core.domain.model.HealthSeverity
 import com.smartkdfarm.app.core.domain.repository.AuthRepository
 import com.smartkdfarm.app.core.domain.repository.LivestockRepository
 import com.smartkdfarm.app.core.domain.usecase.ArchiveAnimalUseCase
+import com.smartkdfarm.app.core.domain.usecase.LogHealthEventUseCase
 import com.smartkdfarm.app.core.domain.usecase.LogInseminationUseCase
 import com.smartkdfarm.app.presentation.auth.CloseableHandle
 
@@ -26,6 +28,7 @@ class LivestockViewModel(
     private val livestockRepository: LivestockRepository,
     private val logInseminationUseCase: LogInseminationUseCase,
     private val archiveAnimalUseCase: ArchiveAnimalUseCase,
+    private val logHealthEventUseCase: LogHealthEventUseCase,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val mutableUiState = MutableStateFlow(LivestockUiState())
@@ -100,6 +103,37 @@ class LivestockViewModel(
                     reason = reason,
                     saleAmount = saleAmount,
                     notes = notes,
+                )
+            }.onSuccess {
+                val refreshed = livestockRepository.getLivestock(farmId)
+                publishAnimals(refreshed)
+            }.onFailure { error ->
+                mutableUiState.value = mutableUiState.value.copy(
+                    isLoading = false,
+                    errorMessage = error.message,
+                )
+            }
+        }
+    }
+
+    fun logHealthEvent(
+        animalId: String,
+        title: String,
+        notes: String? = null,
+        treatment: String? = null,
+        severity: HealthSeverity = HealthSeverity.OBSERVATION,
+    ) {
+        val farmId = mutableUiState.value.farmId ?: return
+        scope.launch {
+            mutableUiState.value = mutableUiState.value.copy(isLoading = true, errorMessage = null)
+            runCatching {
+                logHealthEventUseCase(
+                    farmId = farmId,
+                    animalId = animalId,
+                    title = title,
+                    notes = notes,
+                    treatment = treatment,
+                    severity = severity,
                 )
             }.onSuccess {
                 val refreshed = livestockRepository.getLivestock(farmId)

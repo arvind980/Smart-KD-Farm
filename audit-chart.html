@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Smart KD Farm – Audit vs Plan</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b1120;color:#e2e8f0;padding:28px;}
+  h1{text-align:center;font-size:1.9rem;font-weight:900;color:#38bdf8;margin-bottom:6px;}
+  .sub{text-align:center;color:#94a3b8;font-size:.9rem;margin-bottom:32px;}
+
+  /* STAT ROW */
+  .stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:32px;}
+  .stat{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:14px 22px;text-align:center;min-width:110px;}
+  .stat .v{font-size:2rem;font-weight:900;}
+  .stat .l{font-size:.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-top:3px;}
+  .green .v{color:#4ade80;} .amber .v{color:#fbbf24;} .red .v{color:#f87171;} .blue .v{color:#38bdf8;}
+
+  /* SECTIONS */
+  .section{margin-bottom:28px;}
+  .section-title{font-size:1rem;font-weight:800;color:#7dd3fc;text-transform:uppercase;letter-spacing:.08em;
+    border-left:4px solid #38bdf8;padding-left:12px;margin-bottom:14px;}
+
+  /* FEATURE GRID */
+  .feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+  .feat-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:16px;}
+  .feat-card.done{border-left:4px solid #4ade80;}
+  .feat-card.partial{border-left:4px solid #fbbf24;}
+  .feat-card.pending{border-left:4px solid #f87171;}
+  .feat-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .feat-icon{font-size:1.3rem;}
+  .feat-name{font-weight:700;font-size:.95rem;color:#f1f5f9;}
+  .badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.72rem;font-weight:700;margin-left:auto;white-space:nowrap;}
+  .b-done{background:#166534;color:#86efac;}
+  .b-partial{background:#713f12;color:#fde68a;}
+  .b-pending{background:#7f1d1d;color:#fca5a5;}
+  .feat-desc{font-size:.82rem;color:#94a3b8;line-height:1.55;}
+  .feat-items{margin-top:8px;display:flex;flex-direction:column;gap:4px;}
+  .item-row{display:flex;align-items:flex-start;gap:8px;font-size:.8rem;}
+  .item-row .dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+  .dot-done{background:#4ade80;} .dot-partial{background:#fbbf24;} .dot-pending{background:#f87171;}
+  .item-text{color:#cbd5e1;}
+
+  /* IMPROVEMENTS */
+  .imp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;}
+  .imp-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:16px;}
+  .imp-head{font-weight:700;font-size:.92rem;color:#f1f5f9;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .prio{padding:2px 8px;border-radius:6px;font-size:.7rem;font-weight:800;}
+  .p-high{background:#7f1d1d;color:#fca5a5;}
+  .p-med{background:#713f12;color:#fde68a;}
+  .p-low{background:#1e3a5f;color:#93c5fd;}
+  .imp-body{font-size:.82rem;color:#94a3b8;line-height:1.6;}
+  .imp-body ul{padding-left:16px;margin-top:4px;}
+  .imp-body li{margin-bottom:3px;}
+
+  /* PLATFORM TABLE */
+  table{width:100%;border-collapse:collapse;font-size:.83rem;}
+  th{background:#0f172a;color:#7dd3fc;text-align:left;padding:10px 14px;font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;}
+  td{padding:9px 14px;border-bottom:1px solid #1e293b22;color:#cbd5e1;}
+  tr:hover td{background:#ffffff08;}
+  .c-done{color:#4ade80;font-weight:700;} .c-partial{color:#fbbf24;font-weight:700;} .c-pending{color:#f87171;font-weight:700;}
+
+  /* MERMAID */
+  .mermaid-box{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+
+<h1>Smart KD Farm — Plan vs Implementation Audit</h1>
+<p class="sub">Based on your architecture diagram · Checked against actual source code</p>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat green"><div class="v">14</div><div class="l">Fully Done</div></div>
+  <div class="stat amber"><div class="v">5</div><div class="l">Partial / Stub</div></div>
+  <div class="stat red"><div class="v">4</div><div class="l">Pending / Missing</div></div>
+  <div class="stat blue"><div class="v">~76%</div><div class="l">Plan Complete</div></div>
+</div>
+
+<!-- PROGRESS BAR CHART -->
+<div class="section">
+  <div class="section-title">📊 Overall Progress by Module</div>
+  <div class="mermaid-box">
+    <div class="mermaid">
+xychart-beta horizontal
+  title "Module Completion (%)"
+  x-axis ["Auth & Login", "Dashboard KPIs", "Alert Banner", "Livestock Grid", "Breeding Tracker", "Health Logs", "Lactation Graph", "Outer Center UI", "FAT/SNF Calc", "SMS Gateway", "Khata Ledger", "Inventory UI", "Batch Feed", "Farm Config", "Staff Control", "Financial Reports", "Fodder Tracker", "Biogas Mgmt", "Search (OC)", "Pie Charts"]
+  y-axis "Completion %" 0 --> 100
+  bar [100, 100, 100, 100, 85, 80, 90, 100, 100, 60, 100, 100, 100, 100, 100, 80, 20, 10, 30, 40]
+    </div>
+  </div>
+</div>
+
+<!-- FEATURE AUDIT CARDS -->
+<div class="section">
+  <div class="section-title">🔍 Feature-by-Feature Audit (vs Your Diagram)</div>
+  <div class="feat-grid">
+
+    <!-- AUTH -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">🔐</div><div class="feat-name">Admin Login (Authentication)</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Login with mobile + password</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Farm registration flow</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Role-based routing (Admin/DairyMan/Labour/Farmer)</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">iOS SwiftUI + Android Compose implementations</div></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">🏠</div><div class="feat-name">Admin Home Dashboard UI</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">KPI Cards: Total Milk, Active Animals, Net P&L</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Critical Alerts Banner (color-coded INFO/WARNING/CRITICAL)</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Smart Analytics cards (Lactation + 3-Month Supply)</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Bottom Navigation Bar (5 tabs)</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Global "+" FAB with Quick Actions</div></div>
+      </div>
+    </div>
+
+    <!-- LIVESTOCK GRID -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">🐄</div><div class="feat-name">Livestock Grid UI</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">2-column grid with animal cards</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Tag #, Status chip (color-coded), Breed, Age</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Milking / Pregnant / Dry / Healthy Watch statuses</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Breeding info (AI date, calving due)</div></div>
+      </div>
+    </div>
+
+    <!-- BREEDING -->
+    <div class="feat-card partial">
+      <div class="feat-head"><div class="feat-icon">🧬</div><div class="feat-name">Breeding Lifecycle Tracker (Timeline)</div><span class="badge b-partial">PARTIAL</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Log insemination → auto-calculate calving date</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Breed-aware timing (cattle vs buffalo)</div></div>
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Timeline UI is steps list — not a visual calendar/Gantt</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No individual animal drilldown screen</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No pregnancy diagnosis date reminder push</div></div>
+      </div>
+    </div>
+
+    <!-- HEALTH LOGS -->
+    <div class="feat-card partial">
+      <div class="feat-head"><div class="feat-icon">💉</div><div class="feat-name">Health Logs & Deworming Schedule</div><span class="badge b-partial">PARTIAL</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Health alerts list per animal (deworming / mastitis)</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Vaccination drive display</div></div>
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Due/Observe/Scheduled status chips shown</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No form to log new health event from UI</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No deworming schedule calendar</div></div>
+      </div>
+    </div>
+
+    <!-- LACTATION GRAPH -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">📈</div><div class="feat-name">Lactation Curve Graph (Analytics)</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Canvas-drawn line chart with gradient fill</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Normalized Y-axis with data points</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">3-Month Supply Deal prediction chart</div></div>
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Not interactive (no tap-to-see-value)</div></div>
+      </div>
+    </div>
+
+    <!-- OUTER CENTER -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">🥛</div><div class="feat-name">Outer Milk Collection (Kisan Dairy) UI</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Farmer name, quantity, FAT, SNF input form</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Collection records list (recent entries)</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Farmer Ledger Pay Out status tracking</div></div>
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Search bar exists but is a stub (not functional)</div></div>
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">No Kisan List with profile cards (diagram shows photos)</div></div>
+      </div>
+    </div>
+
+    <!-- AUTO RATE -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">🧮</div><div class="feat-name">FAT/SNF Auto-Rate Calculator</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Live rate = Base + FAT + SNF/2 formula</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Bonus / Deduction / Payable breakdown display</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Auto-posts to Khata ledger on save</div></div>
+      </div>
+    </div>
+
+    <!-- SMS GATEWAY -->
+    <div class="feat-card partial">
+      <div class="feat-head"><div class="feat-icon">📱</div><div class="feat-name">Advanced Notification & SMS Gateway</div><span class="badge b-partial">PARTIAL</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Notification records stored (PENDING/SENT/FAILED/DELIVERED)</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">SMS preview message display ("Smart KD Farm: 10.5L received...")</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Status filter chips in UI</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No real SMS API integration (Twilio / MSG91 / etc.)</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">Auto-trigger on milk entry not hooked to real gateway</div></div>
+      </div>
+    </div>
+
+    <!-- KHATA -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">📒</div><div class="feat-name">Khata Book Ledger UI</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">+ Income (green) / – Expense (red) buttons</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Transactional list with date, title, amount, kind</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Automated entries from Milk Collection & Feed Batch</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Net P&L summary (Income – Expense)</div></div>
+      </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">📦</div><div class="feat-name">Inventory Godown UI</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Tabs: Livestock | Fodder | Inventory</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Item cards with stock level, reorder alert (red highlight)</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Batch Feed Production log (name, output kg, ingredient count)</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Auto stock deduction on batch production</div></div>
+      </div>
+    </div>
+
+    <!-- FINANCIAL REPORTS -->
+    <div class="feat-card partial">
+      <div class="feat-head"><div class="feat-icon">💹</div><div class="feat-name">Financial Reports (P&L, Pie Charts)</div><span class="badge b-partial">PARTIAL</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Total Income / Total Expense / Net P&L metrics</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Top farmer display, low stock alerts</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No Pie Chart for income vs expense breakdown</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No printable/exportable P&L report</div></div>
+      </div>
+    </div>
+
+    <!-- ZAMEEN -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">🌾</div><div class="feat-name">Zameen & Setup (Farm Config)</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Allocate total area with land partitions</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Donut chart visualizing sub-divisions</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">"Sum of parts ≤ Total Area" validation rule</div></div>
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Diagram shows Pie Chart — code has Donut (close but different)</div></div>
+      </div>
+    </div>
+
+    <!-- STAFF -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">👥</div><div class="feat-name">Staff Control (Admin Control Panel)</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Add Labour / Dairy Man with role picker</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Staff Access Configurator with module/permission matrix</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">VIEW / MANAGE / APPROVE level chips per module</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Deactivate staff button + active/disabled status</div></div>
+      </div>
+    </div>
+
+    <!-- FODDER -->
+    <div class="feat-card pending">
+      <div class="feat-head"><div class="feat-icon">🌿</div><div class="feat-name">Fodder Yield Tracker (Land Plot linked)</div><span class="badge b-pending">PENDING</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Land partitions with crop/use field exist</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No UI to log fodder yield per partition</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No yield-to-feed-batch linkage</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No seasonal harvest tracking</div></div>
+      </div>
+    </div>
+
+    <!-- BIOGAS -->
+    <div class="feat-card pending">
+      <div class="feat-head"><div class="feat-icon">♻️</div><div class="feat-name">Biogas & Waste Management</div><span class="badge b-pending">PENDING</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Referenced in "Connected Ops" timeline UI only</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No domain model for biogas/waste tracking</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No input form or record screen</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No link to inventory or financial impact</div></div>
+      </div>
+    </div>
+
+    <!-- GLOBAL FAB -->
+    <div class="feat-card done">
+      <div class="feat-head"><div class="feat-icon">➕</div><div class="feat-name">Global "+" FAB (Quick Actions)</div><span class="badge b-done">DONE</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Quick Doodh Entry</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Quick Kharcha/Income</div></div>
+        <div class="item-row"><div class="dot dot-done"></div><div class="item-text">Batch Feed Production</div></div>
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Fixed 3-item list — not an expandable animated FAB</div></div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="feat-card pending">
+      <div class="feat-head"><div class="feat-icon">🔍</div><div class="feat-name">Kisan Search in Outer Center</div><span class="badge b-pending">PENDING</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Search bar renders in UI (SearchBarStub)</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No filtering logic connected to ViewModel</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No Kisan profile cards (diagram shows names + "Pay Now")</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">Pay Now / Pay Out approve button not wired</div></div>
+      </div>
+    </div>
+
+    <!-- PIE CHARTS -->
+    <div class="feat-card pending">
+      <div class="feat-head"><div class="feat-icon">🥧</div><div class="feat-name">Financial Pie Charts</div><span class="badge b-pending">PENDING</span></div>
+      <div class="feat-items">
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No income vs expense pie chart</div></div>
+        <div class="item-row"><div class="dot dot-pending"></div><div class="item-text">No animal status distribution pie chart</div></div>
+        <div class="item-row"><div class="dot dot-partial"></div><div class="item-text">Only land partition donut chart is implemented</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PLATFORM COVERAGE TABLE -->
+<div class="section">
+  <div class="section-title">📱 Platform Coverage</div>
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:14px;overflow:hidden;">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Android</th>
+          <th>iOS</th>
+          <th>Web</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Auth / Login</td><td class="c-done">✅ Full</td><td class="c-done">✅ Full</td><td class="c-done">✅ Full</td></tr>
+        <tr><td>Dashboard KPIs</td><td class="c-done">✅ Full</td><td class="c-partial">⚠️ Simplified</td><td class="c-done">✅ Full</td></tr>
+        <tr><td>Livestock Grid</td><td class="c-done">✅ Full</td><td class="c-done">✅ Full</td><td class="c-done">✅ Full</td></tr>
+        <tr><td>Breeding Timeline</td><td class="c-done">✅ Steps UI</td><td class="c-partial">⚠️ Card labels only</td><td class="c-done">✅ Steps UI</td></tr>
+        <tr><td>Health Logs</td><td class="c-done">✅ Alert list</td><td class="c-partial">⚠️ Headline only</td><td class="c-done">✅ Alert list</td></tr>
+        <tr><td>Lactation Graph</td><td class="c-done">✅ Canvas chart</td><td class="c-pending">❌ Not implemented</td><td class="c-done">✅ Canvas chart</td></tr>
+        <tr><td>Outer Center / Milk</td><td class="c-done">✅ Full form</td><td class="c-pending">❌ Not implemented</td><td class="c-done">✅ Full form</td></tr>
+        <tr><td>FAT/SNF Calc</td><td class="c-done">✅ Live calc</td><td class="c-pending">❌ Not implemented</td><td class="c-done">✅ Live calc</td></tr>
+        <tr><td>SMS Notification</td><td class="c-partial">⚠️ UI only, no gateway</td><td class="c-pending">❌ Not implemented</td><td class="c-partial">⚠️ Preview only</td></tr>
+        <tr><td>Khata Ledger</td><td class="c-done">✅ Full</td><td class="c-pending">❌ Not implemented</td><td class="c-done">✅ Full</td></tr>
+        <tr><td>Inventory</td><td class="c-done">✅ Full</td><td class="c-pending">❌ Not implemented</td><td class="c-done">✅ Full</td></tr>
+        <tr><td>Batch Feed</td><td class="c-done">✅ Full</td><td class="c-pending">❌ Not implemented</td><td class="c-done">✅ Full</td></tr>
+        <tr><td>Farm Config (Zameen)</td><td class="c-done">✅ Full + donut chart</td><td class="c-pending">❌ Not implemented</td><td class="c-done">✅ Full</td></tr>
+        <tr><td>Staff Control</td><td class="c-done">✅ Full CRUD</td><td class="c-pending">❌ Not implemented</td><td class="c-done">✅ Full</td></tr>
+        <tr><td>Financial Reports</td><td class="c-partial">⚠️ Metrics, no pie</td><td class="c-pending">❌ Not implemented</td><td class="c-partial">⚠️ Metrics, no pie</td></tr>
+        <tr><td>Fodder Tracker</td><td class="c-pending">❌ Missing</td><td class="c-pending">❌ Missing</td><td class="c-pending">❌ Missing</td></tr>
+        <tr><td>Biogas Management</td><td class="c-pending">❌ Missing</td><td class="c-pending">❌ Missing</td><td class="c-pending">❌ Missing</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- UI IMPROVEMENT SUGGESTIONS -->
+<div class="section">
+  <div class="section-title">🚀 UI Improvements for Better Result</div>
+  <div class="imp-grid">
+
+    <div class="imp-card">
+      <div class="imp-head">🔍 Wire Kisan Search in Outer Center <span class="prio p-high">HIGH</span></div>
+      <div class="imp-body">
+        The search bar is a stub. Connect it to <code>OperationsViewModel</code> to filter <code>milkCollections</code> by farmer name/phone.
+        <ul>
+          <li>Add <code>searchQuery: String</code> to <code>OperationsUiState</code></li>
+          <li>Filter farmer list reactively in the ViewModel</li>
+          <li>Show farmer profile cards with "Pay Now" button → trigger payout flow</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">🐄 Animal Detail Drilldown Screen <span class="prio p-high">HIGH</span></div>
+      <div class="imp-body">
+        The diagram implies tapping an animal card opens a full detail screen. Currently only a grid card exists.
+        <ul>
+          <li>Add <code>selectedAnimalId: String?</code> to <code>LivestockUiState</code></li>
+          <li>Create <code>AnimalDetailScreen</code> with breeding timeline, health log list, log-new-health form</li>
+          <li>Add back navigation to the grid</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">🥧 Financial Pie Charts <span class="prio p-high">HIGH</span></div>
+      <div class="imp-body">
+        The diagram shows Pie Charts in Financial Reports. No pie chart exists for finances.
+        <ul>
+          <li>Reuse the existing <code>DrawScope</code> canvas donut logic (already in land partition)</li>
+          <li>Add income vs expense pie in <code>KhataSection</code></li>
+          <li>Add animal status distribution pie in Livestock tab header</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">📱 iOS Full Feature Parity <span class="prio p-high">HIGH</span></div>
+      <div class="imp-body">
+        iOS is missing Outer Center, Khata, Inventory, Farm Config, Staff panels. Currently only shows Auth + Livestock.
+        <ul>
+          <li>Replace the custom <code>ContentView.swift</code> dashboard with the KMP shared <code>SmartKdFarmConsole</code></li>
+          <li>All other features will automatically appear on iOS with zero extra code</li>
+          <li>Or add native SwiftUI tabs matching Android sections</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">📊 Interactive Charts (Tap to Inspect) <span class="prio p-med">MEDIUM</span></div>
+      <div class="imp-body">
+        Lactation and supply charts are canvas-drawn but not interactive. The diagram shows "Interactive Graphs."
+        <ul>
+          <li>Add <code>pointerInput</code> tap handler on the canvas</li>
+          <li>Show a tooltip with milk (L) and projected revenue on tap/hover</li>
+          <li>Highlight the nearest data point</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">💊 Health Log Entry Form <span class="prio p-med">MEDIUM</span></div>
+      <div class="imp-body">
+        Health alerts display fine but there's no form to add a new health event from the UI.
+        <ul>
+          <li>Add <code>logHealthEvent(animalId, type, notes, dueDate)</code> to <code>LivestockViewModel</code></li>
+          <li>Create a modal/bottom-sheet form in the Livestock tab</li>
+          <li>Types: Deworming, Vaccination, Mastitis Check, General</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">➕ Animated Expandable FAB <span class="prio p-med">MEDIUM</span></div>
+      <div class="imp-body">
+        The diagram shows a circular "+" FAB button (like a speed dial). Currently it's a static card with 3 text buttons.
+        <ul>
+          <li>Replace the quick-action card with a real <code>FloatingActionButton</code></li>
+          <li>On tap, expand 3 mini-FABs with icons + labels with animated slide-up</li>
+          <li>Overlay scrim to dismiss on outside tap</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">🌿 Fodder Yield Tracker <span class="prio p-med">MEDIUM</span></div>
+      <div class="imp-body">
+        Shown in the diagram as "Fodder Yield Tracker (Land Plot linked)" but entirely missing.
+        <ul>
+          <li>Add <code>FodderYieldLog</code> domain model (partitionId, yieldKg, harvestDate)</li>
+          <li>Add <code>FodderYieldRepository</code> + Firebase impl</li>
+          <li>Add Fodder sub-tab in Inventory with yield log form and history</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">📲 Real SMS Gateway Integration <span class="prio p-med">MEDIUM</span></div>
+      <div class="imp-body">
+        SMS is tracked as PENDING/SENT/DELIVERED but no real API sends the message.
+        <ul>
+          <li>Add SMS provider config in Farm Setup (MSG91 / Twilio API key)</li>
+          <li>Trigger API call in <code>RecordMilkCollectionUseCase</code> after saving</li>
+          <li>Update notification status based on API response</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">💳 Pay Out Approve / Clearing Flow <span class="prio p-med">MEDIUM</span></div>
+      <div class="imp-body">
+        The diagram shows "Farmer Ledger → Pay Out Approve / Clearing" as a distinct step, but it's just a status field.
+        <ul>
+          <li>Add <code>approvePayOut(collectionIds)</code> use case</li>
+          <li>Group collections by farmer → show total due → "Approve & Mark Paid"</li>
+          <li>Post a payout ledger entry and update notification to DELIVERED</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">♻️ Biogas & Waste Management <span class="prio p-low">LOW</span></div>
+      <div class="imp-body">
+        Mentioned in diagram but no domain model or UI exists.
+        <ul>
+          <li>Add <code>WasteLog</code> model (date, type: Dung/Slurry/Biogas, quantityKg)</li>
+          <li>Simple log form in Inventory "Godown" tab</li>
+          <li>Show biogas output as optional income in Khata</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="imp-card">
+      <div class="imp-head">🗓️ Breeding Calendar View <span class="prio p-low">LOW</span></div>
+      <div class="imp-body">
+        The diagram implies a visual "Timeline UI" for breeding lifecycle — currently only a numbered steps list.
+        <ul>
+          <li>Show a horizontal timeline bar per animal: AI Date → PD Date → Calving Date</li>
+          <li>Color-code by stage (Inseminated / Confirmed / Due Soon)</li>
+          <li>Sort animals by upcoming calving date</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRIORITY ROADMAP -->
+<div class="section">
+  <div class="section-title">🗺️ Suggested Fix Priority Roadmap</div>
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px;">
+    <div class="mermaid">
+gantt
+  title Smart KD Farm – Remaining Work Roadmap
+  dateFormat  YYYY-MM-DD
+  section 🔴 High Priority
+    Wire Kisan Search (Outer Center)         :crit, a1, 2026-05-22, 2d
+    Animal Detail Drilldown Screen           :crit, a2, after a1, 3d
+    Financial Pie Charts                     :crit, a3, after a1, 2d
+    iOS Full Feature Parity (use shared UI)  :crit, a4, after a2, 2d
+  section 🟡 Medium Priority
+    Interactive Charts (tap tooltip)         :b1, after a3, 2d
+    Health Log Entry Form                    :b2, after a4, 2d
+    Animated Expandable FAB                  :b3, after b1, 1d
+    Pay Out Approve / Clearing Flow          :b4, after b2, 3d
+    Fodder Yield Tracker                     :b5, after b4, 3d
+    Real SMS Gateway Integration             :b6, after b5, 2d
+  section 🔵 Low Priority
+    Biogas & Waste Management                :c1, after b6, 2d
+    Breeding Calendar View                   :c2, after b6, 3d
+    </div>
+  </div>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e3a5f',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      lineColor: '#38bdf8',
+      secondaryColor: '#1e293b',
+      tertiaryColor: '#0f172a',
+      background: '#0f172a',
+      mainBkg: '#1e293b',
+      nodeBorder: '#38bdf8',
+      titleColor: '#7dd3fc',
+      edgeLabelBackground: '#1e293b',
+      fontSize: '13px'
+    },
+    gantt: { barHeight: 22, barGap: 6, topPadding: 50, leftPadding: 200, gridLineStartPadding: 35, fontSize: 12 }
+  });
+</script>
+</body>
+</html>

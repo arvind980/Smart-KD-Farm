@@ -24,6 +24,8 @@ class FirebaseAuthRepository : AuthRepository {
 
     override fun observeAuthenticatedUser(): Flow<User?> = sessionState.asStateFlow()
 
+    override fun currentAuthenticatedUser(): User? = sessionState.value
+
     override suspend fun refreshAuthenticatedUser(): User? {
         val currentUid = auth.currentUser?.uid ?: return null.also { sessionState.value = null }
         val profile = fetchUserProfile(currentUid)

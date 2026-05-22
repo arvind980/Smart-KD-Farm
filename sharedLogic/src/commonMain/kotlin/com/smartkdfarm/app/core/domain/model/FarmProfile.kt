@@ -72,6 +72,7 @@ data class FarmProfile(
     val adminUserId: String? = null,
     val notes: String? = null,
     val isActive: Boolean = true,
+    val smsGatewayConfig: SmsGatewayConfig? = null,
     val createdAtEpochMillis: Long = TimeProvider.nowEpochMillis(),
     val updatedAtEpochMillis: Long = TimeProvider.nowEpochMillis(),
 ) {

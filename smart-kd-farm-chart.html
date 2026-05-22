@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart KD Farm – Project Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 32px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #38bdf8;
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+    }
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 0.95rem;
+      margin-bottom: 40px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .card.full { grid-column: 1 / -1; }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #7dd3fc;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-left: 3px solid #38bdf8;
+      padding-left: 10px;
+    }
+    .mermaid { width: 100%; }
+
+    /* Summary table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    th {
+      background: #0f172a;
+      color: #7dd3fc;
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #1e293b;
+      color: #cbd5e1;
+    }
+    tr:nth-child(even) td { background: #0f172a33; }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .done   { background: #166534; color: #86efac; }
+    .partial{ background: #713f12; color: #fde68a; }
+    .num    { color: #38bdf8; font-weight: 700; }
+
+    .stat-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+    .stat {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px 24px;
+      text-align: center;
+      min-width: 120px;
+    }
+    .stat .val { font-size: 2rem; font-weight: 800; color: #38bdf8; }
+    .stat .lbl { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+  </style>
+</head>
+<body>
+
+<h1>Smart KD Farm</h1>
+<p class="subtitle">Kotlin Multiplatform · Android · iOS · Web · Firebase</p>
+
+<div class="stat-row">
+  <div class="stat"><div class="val">11</div><div class="lbl">Use Cases</div></div>
+  <div class="stat"><div class="val">8</div><div class="lbl">Repositories</div></div>
+  <div class="stat"><div class="val">4</div><div class="lbl">ViewModels</div></div>
+  <div class="stat"><div class="val">3</div><div class="lbl">Platforms</div></div>
+  <div class="stat"><div class="val">~89</div><div class="lbl">Source Files</div></div>
+  <div class="stat"><div class="val">7</div><div class="lbl">Feature Areas</div></div>
+</div>
+
+<div class="grid">
+
+  <!-- Architecture -->
+  <div class="card full">
+    <h2>System Architecture</h2>
+    <div class="mermaid">
+graph LR
+    subgraph Platforms["📱 Platforms"]
+      direction TB
+      Android[Android App]
+      iOS[iOS App]
+      Web[Web App JS/Wasm]
+    end
+
+    subgraph UI["🎨 sharedUI – Compose Multiplatform"]
+      direction TB
+      AppUI[App.kt]
+      AuthUI[AuthAppScreen]
+      Console[SmartKdFarmConsole]
+      DS[DesignSystem]
+    end
+
+    subgraph Logic["🧠 sharedLogic"]
+      direction TB
+      subgraph Pres["Presentation"]
+        AVM[AuthViewModel]
+        LVM[LivestockViewModel]
+        OVM[OperationsViewModel]
+        ADVM[AdminViewModel]
+      end
+      subgraph Dom["Domain"]
+        UC[Use Cases × 11]
+        REPO[Repository Interfaces × 8]
+        MDL[Domain Models]
+      end
+      subgraph Data["Data – Firebase"]
+        FB1[FirebaseAuthRepo]
+        FB2[FirebaseLivestockRepo]
+        FB3[FirebaseOuterCenterRepo]
+        FB4[FirebaseInventoryRepo]
+        FB5[FirebaseFinanceRepo]
+        FB6[FirebaseAdminRepo]
+        FB7[FirebaseAnalyticsRepo]
+      end
+    end
+
+    subgraph Firebase["☁️ Firebase Backend"]
+      FBAuth[Firebase Auth]
+      FBFS[Firestore DB]
+    end
+
+    Android & iOS & Web --> UI
+    UI --> Pres
+    Pres --> UC --> REPO
+    REPO --> Data
+    FB1 --> FBAuth
+    FB2 & FB3 & FB4 & FB5 & FB6 & FB7 --> FBFS
+
+    style Platforms fill:#1e3a5f,stroke:#38bdf8
+    style UI fill:#1a3a2a,stroke:#4ade80
+    style Logic fill:#2d1b4e,stroke:#a78bfa
+    style Firebase fill:#3a1a1a,stroke:#f87171
+    </div>
+  </div>
+
+  <!-- Feature Modules -->
+  <div class="card">
+    <h2>Feature Modules</h2>
+    <div class="mermaid">
+flowchart TD
+    App([Smart KD Farm]) --> Auth
+    App --> Livestock
+    App --> OuterCenter
+    App --> Inventory
+    App --> Khata
+    App --> Admin
+    App --> Analytics
+
+    Auth["🔐 Auth & Users\nFarm Register · Login\nRole-Based Access"]
+    Livestock["🐄 Livestock\nAnimal Profiles · Insemination\nHealth Logs · Archival"]
+    OuterCenter["🥛 Outer Center\nMilk Collection\nAuto Rate Calc · Notifications"]
+    Inventory["📦 Inventory\nItems · Reorder Alerts\nFeed Batch Production"]
+    Khata["💰 Khata Finance\nLedger · Income\nExpenses · Transactions"]
+    Admin["⚙️ Admin & Config\nStaff Profiles\nLand Partitions"]
+    Analytics["📊 Analytics\nDashboard Alerts\nSupply Predictions"]
+
+    style App fill:#1e40af,stroke:#60a5fa,color:#fff
+    style Auth fill:#065f46,stroke:#34d399,color:#d1fae5
+    style Livestock fill:#78350f,stroke:#fbbf24,color:#fef3c7
+    style OuterCenter fill:#1e3a5f,stroke:#38bdf8,color:#e0f2fe
+    style Inventory fill:#4a1942,stroke:#e879f9,color:#fae8ff
+    style Khata fill:#14532d,stroke:#4ade80,color:#dcfce7
+    style Admin fill:#7f1d1d,stroke:#f87171,color:#fee2e2
+    style Analytics fill:#1c1917,stroke:#a8a29e,color:#f5f5f4
+    </div>
+  </div>
+
+  <!-- Data Flow -->
+  <div class="card">
+    <h2>Core Data Flow</h2>
+    <div class="mermaid">
+sequenceDiagram
+    participant UI as Compose UI
+    participant VM as ViewModel
+    participant UC as Use Case
+    participant R as Repository
+    participant FB as Firebase
+
+    UI->>VM: User Action
+    VM->>UC: execute()
+    UC->>UC: Validate & enrich
+    UC->>R: persist / query
+    R->>FB: Firestore write/read
+    FB-->>R: Result
+    R-->>UC: Domain object
+    UC-->>VM: Success / Error
+    VM-->>UI: StateFlow update
+
+    Note over UC,R: Cascading writes e.g.<br/>Milk → Ledger + Notification
+    Note over VM,UI: Reactive via Flow &amp; StateFlow
+    </div>
+  </div>
+
+  <!-- Module Dependencies -->
+  <div class="card">
+    <h2>Module Dependency Graph</h2>
+    <div class="mermaid">
+graph TD
+    androidApp --> sharedUI
+    iosApp --> sharedUI
+    webApp --> sharedUI
+    sharedUI --> sharedLogic
+
+    sharedLogic --> commonMain
+    sharedLogic --> mobileMain
+    sharedLogic --> androidMain
+    sharedLogic --> iosMain
+
+    commonMain["commonMain\nDomain Models · Use Cases\nViewModels · Interfaces"]
+    mobileMain["mobileMain\nFirebase Implementations\n8 Repositories"]
+    androidMain["androidMain\nAndroid-specific DI"]
+    iosMain["iosMain\niOS-specific DI"]
+
+    style androidApp fill:#1a3a1a,stroke:#4ade80
+    style iosApp fill:#1a2a3a,stroke:#38bdf8
+    style webApp fill:#3a1a3a,stroke:#c084fc
+    style sharedUI fill:#1e293b,stroke:#7dd3fc
+    style sharedLogic fill:#1e293b,stroke:#f59e0b
+    style commonMain fill:#0f172a,stroke:#94a3b8
+    style mobileMain fill:#0f172a,stroke:#94a3b8
+    style androidMain fill:#0f172a,stroke:#94a3b8
+    style iosMain fill:#0f172a,stroke:#94a3b8
+    </div>
+  </div>
+
+  <!-- Summary Table -->
+  <div class="card full">
+    <h2>Work Completion Summary</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Component</th>
+          <th>Count</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Domain Models</td><td>SmartFarmModels – User, Farm, Animal, MilkCollection, Inventory, Feed Batch, Ledger, Staff, Land</td><td class="num">9+</td><td><span class="badge done">Done</span></td></tr>
+        <tr><td>Repository Interfaces</td><td>Auth · Farm · Livestock · OuterCenter · Inventory · Finance · Admin · Analytics</td><td class="num">8</td><td><span class="badge done">Done</span></td></tr>
+        <tr><td>Use Cases</td><td>RegisterFarm · Login · RecordMilk · LogInsemination · ArchiveAnimal · FeedBatch · AddStaff · FarmSetup · StaffProfile · Deactivate · Prediction</td><td class="num">11</td><td><span class="badge done">Done</span></td></tr>
+        <tr><td>ViewModels</td><td>AuthViewModel · LivestockViewModel · OperationsViewModel · AdminViewModel</td><td class="num">4</td><td><span class="badge done">Done</span></td></tr>
+        <tr><td>Firebase Implementations</td><td>All 8 repository Firebase implementations</td><td class="num">8</td><td><span class="badge done">Done</span></td></tr>
+        <tr><td>Shared UI</td><td>App.kt · DesignSystem · SmartKdFarmConsole</td><td class="num">3</td><td><span class="badge done">Done</span></td></tr>
+        <tr><td>Android App</td><td>MainActivity · AuthAppScreen</td><td class="num">2</td><td><span class="badge done">Done</span></td></tr>
+        <tr><td>iOS App</td><td>ContentView.swift · iOSApp.swift</td><td class="num">2</td><td><span class="badge done">Done</span></td></tr>
+        <tr><td>Firebase Config</td><td>firestore.rules · FIREBASE_APP_SCHEMA.md · firebase.json</td><td class="num">3</td><td><span class="badge done">Done</span></td></tr>
+        <tr><td>DI / Koin</td><td>SharedModules.kt</td><td class="num">1</td><td><span class="badge done">Done</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e3a5f',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      lineColor: '#38bdf8',
+      secondaryColor: '#1e293b',
+      tertiaryColor: '#0f172a',
+      background: '#0f172a',
+      mainBkg: '#1e293b',
+      nodeBorder: '#38bdf8',
+      clusterBkg: '#1e293b',
+      titleColor: '#7dd3fc',
+      edgeLabelBackground: '#1e293b',
+      fontSize: '14px'
+    }
+  });
+</script>
+</body>
+</html>

@@ -9,6 +9,8 @@ import com.smartkdfarm.app.core.domain.model.UserProvisioningRequest
 interface AuthRepository {
     fun observeAuthenticatedUser(): Flow<User?>
 
+    fun currentAuthenticatedUser(): User?
+
     suspend fun refreshAuthenticatedUser(): User?
 
     suspend fun login(credentials: LoginCredentials): User

@@ -56,6 +56,9 @@ kotlin {
                 implementation(libs.firebase.common)
                 implementation(libs.firebase.firestore)
                 implementation(libs.koin.core)
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
             }
         }
         androidMain.get().dependsOn(mobileMain)
@@ -63,9 +66,13 @@ kotlin {
             implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
             implementation("com.google.firebase:firebase-common-ktx:21.0.0")
             implementation("com.google.firebase:firebase-firestore:26.0.2")
+            implementation(libs.ktor.client.okhttp)
         }
         val iosMain by creating {
             dependsOn(mobileMain)
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
         }
         iosArm64Main.get().dependsOn(iosMain)
         iosSimulatorArm64Main.get().dependsOn(iosMain)

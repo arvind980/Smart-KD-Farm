@@ -13,7 +13,7 @@ fun AppBackground(content: @Composable () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
-                .matchParentSize()
+                .fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(Color(0xFF134E5E), Color(0xFF71B280)),

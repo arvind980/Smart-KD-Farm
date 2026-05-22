@@ -33,6 +33,18 @@ service cloud.firestore {
       return isFarmMember(farmId) && isAdmin();
     }
 
+    function isDairyOperatorForFarm(farmId) {
+      return isFarmMember(farmId) &&
+        (currentUserData().role == "ADMIN" || currentUserData().role == "DAIRY_MAN");
+    }
+
+    function isOperationalStaffForFarm(farmId) {
+      return isFarmMember(farmId) &&
+        (currentUserData().role == "ADMIN" ||
+         currentUserData().role == "DAIRY_MAN" ||
+         currentUserData().role == "LABOUR");
+    }
+
     match /users/{userId} {
       allow create: if isSelf(userId);
       allow read, update: if isSelf(userId);
@@ -54,14 +66,77 @@ service cloud.firestore {
       allow delete: if false;
 
       match /livestock/{animalId} {
-        allow read, write: if isFarmMember(farmId);
+        allow read: if isFarmMember(farmId);
+        allow write: if isOperationalStaffForFarm(farmId);
       }
 
       match /khata/{documentId} {
-        allow read, write: if isFarmMember(farmId);
+        allow read: if isFarmMember(farmId);
+        allow write: if isDairyOperatorForFarm(farmId);
 
         match /transactions/{transactionId} {
-          allow read, write: if isFarmMember(farmId);
+          allow read: if isFarmMember(farmId);
+          allow write: if isDairyOperatorForFarm(farmId);
+        }
+      }
+
+      match /dashboard/{snapshotId} {
+        allow read: if isFarmMember(farmId);
+        allow write: if isAdminForFarm(farmId);
+      }
+
+      match /alerts/{alertId} {
+        allow read: if isFarmMember(farmId);
+        allow write: if isOperationalStaffForFarm(farmId);
+      }
+
+      match /analytics/{docId} {
+        allow read: if isFarmMember(farmId);
+        allow write: if isAdminForFarm(farmId);
+      }
+
+      match /staff/{staffId} {
+        allow read: if isFarmMember(farmId);
+        allow write: if isAdminForFarm(farmId);
+      }
+
+      match /config/{docId} {
+        allow read: if isFarmMember(farmId);
+        allow write: if isAdminForFarm(farmId);
+
+        match /land_partitions/{partitionId} {
+          allow read: if isFarmMember(farmId);
+          allow write: if isAdminForFarm(farmId);
+        }
+      }
+
+      match /inventory/{docId} {
+        allow read: if isFarmMember(farmId);
+        allow write: if isOperationalStaffForFarm(farmId);
+
+        match /items/{itemId} {
+          allow read: if isFarmMember(farmId);
+          allow write: if isOperationalStaffForFarm(farmId);
+        }
+
+        match /feed_batches/{batchId} {
+          allow read: if isFarmMember(farmId);
+          allow write: if isOperationalStaffForFarm(farmId);
+        }
+      }
+
+      match /outer_center/{docId} {
+        allow read: if isFarmMember(farmId);
+        allow write: if isDairyOperatorForFarm(farmId);
+
+        match /collections/{collectionId} {
+          allow read: if isFarmMember(farmId);
+          allow write: if isDairyOperatorForFarm(farmId);
+        }
+
+        match /notifications/{notificationId} {
+          allow read: if isFarmMember(farmId);
+          allow write: if isDairyOperatorForFarm(farmId);
         }
       }
     }
