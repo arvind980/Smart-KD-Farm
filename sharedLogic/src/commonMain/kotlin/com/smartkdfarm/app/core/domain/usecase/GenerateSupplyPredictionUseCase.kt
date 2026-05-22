@@ -3,8 +3,12 @@ package com.smartkdfarm.app.core.domain.usecase
 import com.smartkdfarm.app.core.domain.model.AnimalStatus
 import com.smartkdfarm.app.core.domain.model.BreedingOutcome
 import com.smartkdfarm.app.core.domain.model.HealthSeverity
+import com.smartkdfarm.app.core.domain.model.PermissionChecker
+import com.smartkdfarm.app.core.domain.model.PermissionLevel
 import com.smartkdfarm.app.core.domain.model.PredictionPoint
 import com.smartkdfarm.app.core.domain.model.PredictionSource
+import com.smartkdfarm.app.core.domain.model.StaffModule
+import com.smartkdfarm.app.core.domain.model.User
 import com.smartkdfarm.app.core.domain.repository.AnalyticsRepository
 import com.smartkdfarm.app.core.domain.repository.LivestockRepository
 import kotlin.math.round
@@ -13,7 +17,11 @@ class GenerateSupplyPredictionUseCase(
     private val livestockRepository: LivestockRepository,
     private val analyticsRepository: AnalyticsRepository,
 ) {
-    suspend operator fun invoke(farmId: String): List<PredictionPoint> {
+    /**
+     * Required permission: REPORTS → VIEW (ADMIN or DAIRY_MAN by default).
+     */
+    suspend operator fun invoke(actor: User, farmId: String): List<PredictionPoint> {
+        PermissionChecker.requireAccess(actor, StaffModule.REPORTS, PermissionLevel.VIEW)
         val animals = livestockRepository.getLivestock(farmId).filter { it.isActive }
         val milking = animals.count { it.status == AnimalStatus.MILKING }
         val pregnant = animals.count { it.status == AnimalStatus.PREGNANT }

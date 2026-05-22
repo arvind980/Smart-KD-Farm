@@ -20,7 +20,11 @@ import com.smartkdfarm.app.core.domain.model.KhataEntryKind
 import com.smartkdfarm.app.core.domain.model.KhataLedgerEntry
 import com.smartkdfarm.app.core.domain.model.MilkCollectionEntry
 import com.smartkdfarm.app.core.domain.model.NotificationStatus
+import com.smartkdfarm.app.core.domain.model.PermissionChecker
+import com.smartkdfarm.app.core.domain.model.PermissionLevel
+import com.smartkdfarm.app.core.domain.model.StaffModule
 import com.smartkdfarm.app.core.domain.model.TimeProvider
+import com.smartkdfarm.app.core.domain.model.UserRole
 import com.smartkdfarm.app.core.domain.model.WasteCategory
 import com.smartkdfarm.app.core.domain.model.WasteLog
 import com.smartkdfarm.app.core.domain.repository.AnalyticsRepository
@@ -108,10 +112,11 @@ class OperationsViewModel(
     }
 
     fun generatePredictions() {
+        val actor = authRepository.currentAuthenticatedUser() ?: return
         val farmId = mutableUiState.value.farmId ?: return
         scope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, errorMessage = null)
-            runCatching { generateSupplyPredictionUseCase(farmId) }
+            runCatching { generateSupplyPredictionUseCase(actor, farmId) }
                 .onSuccess { refresh() }
                 .onFailure { mutableUiState.value = mutableUiState.value.copy(isLoading = false, errorMessage = it.message) }
         }
@@ -140,6 +145,13 @@ class OperationsViewModel(
         vendorName: String? = null,
     ) {
         val actor = authRepository.currentAuthenticatedUser() ?: return
+        // ADMIN or LABOUR may manage inventory items
+        if (!PermissionChecker.canManage(actor, StaffModule.INVENTORY)) {
+            mutableUiState.value = mutableUiState.value.copy(
+                errorMessage = "Insufficient permissions: MANAGE access to INVENTORY is required."
+            )
+            return
+        }
         scope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, errorMessage = null)
             runCatching {
@@ -168,6 +180,13 @@ class OperationsViewModel(
         notes: String? = null,
     ) {
         val actor = authRepository.currentAuthenticatedUser() ?: return
+        // Only ADMIN may post manual ledger entries directly
+        if (!PermissionChecker.hasRole(actor, UserRole.ADMIN)) {
+            mutableUiState.value = mutableUiState.value.copy(
+                errorMessage = "Only ADMIN can record manual Khata entries."
+            )
+            return
+        }
         scope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, errorMessage = null)
             runCatching {
@@ -230,6 +249,13 @@ class OperationsViewModel(
         notes: String? = null,
     ) {
         val actor = authRepository.currentAuthenticatedUser() ?: return
+        // ADMIN, DAIRY_MAN, LABOUR can record fodder yields (INVENTORY → MANAGE)
+        if (!PermissionChecker.canManage(actor, StaffModule.INVENTORY)) {
+            mutableUiState.value = mutableUiState.value.copy(
+                errorMessage = "Insufficient permissions: MANAGE access to INVENTORY is required."
+            )
+            return
+        }
         scope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, errorMessage = null)
             runCatching {
@@ -262,6 +288,13 @@ class OperationsViewModel(
         notes: String? = null,
     ) {
         val actor = authRepository.currentAuthenticatedUser() ?: return
+        // ADMIN, DAIRY_MAN, LABOUR can log waste (INVENTORY → MANAGE)
+        if (!PermissionChecker.canManage(actor, StaffModule.INVENTORY)) {
+            mutableUiState.value = mutableUiState.value.copy(
+                errorMessage = "Insufficient permissions: MANAGE access to INVENTORY is required."
+            )
+            return
+        }
         scope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, errorMessage = null)
             runCatching {

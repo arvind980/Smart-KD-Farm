@@ -5,19 +5,29 @@ import com.smartkdfarm.app.core.domain.model.AnimalProfile
 import com.smartkdfarm.app.core.domain.model.AnimalStatus
 import com.smartkdfarm.app.core.domain.model.BreedingLog
 import com.smartkdfarm.app.core.domain.model.IdGenerator
+import com.smartkdfarm.app.core.domain.model.PermissionChecker
+import com.smartkdfarm.app.core.domain.model.PermissionLevel
+import com.smartkdfarm.app.core.domain.model.StaffModule
 import com.smartkdfarm.app.core.domain.model.TimeProvider
+import com.smartkdfarm.app.core.domain.model.User
 import com.smartkdfarm.app.core.domain.repository.LivestockRepository
 
 class LogInseminationUseCase(
     private val livestockRepository: LivestockRepository,
 ) {
+    /**
+     * Required permission: LIVESTOCK → MANAGE
+     * Allowed roles (default): ADMIN, DAIRY_MAN
+     */
     suspend operator fun invoke(
+        actor: User,
         farmId: String,
         animalId: String,
         aiDateEpochMillis: Long,
         technicianName: String? = null,
         notes: String? = null,
     ): AnimalProfile {
+        PermissionChecker.requireAccess(actor, StaffModule.LIVESTOCK, PermissionLevel.MANAGE)
         val animal = livestockRepository.getAnimal(farmId, animalId)
             ?: throw NotFoundException("No livestock profile found for animalId=$animalId.")
 

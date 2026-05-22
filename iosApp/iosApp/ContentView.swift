@@ -8,22 +8,62 @@ struct ContentView: View {
     @StateObject private var operationsModel = OperationsScreenModel()
 
     var body: some View {
-        if authModel.state.currentUser == nil {
-            AuthFlowView(model: authModel)
+        Group {
+            switch authModel.state.status {
+
+            // ── IDLE: Firebase session check not yet complete → Splash ────────
+            case .idle:
+                SplashView()
+                    .transition(.opacity)
+
+            // ── Authenticated: show main app ──────────────────────────────────
+            case .authenticated:
+                MainTabView(
+                    authModel:       authModel,
+                    livestockModel:  livestockModel,
+                    operationsModel: operationsModel
+                )
                 .background(wholeScreenBackground.ignoresSafeArea())
-        } else {
-            MainTabView(
-                authModel:       authModel,
-                livestockModel:  livestockModel,
-                operationsModel: operationsModel
-            )
-            .background(wholeScreenBackground.ignoresSafeArea())
-            .overlay {
-                if authModel.state.isLoading || livestockModel.state.isLoading || operationsModel.state.isLoading {
-                    ProgressView().scaleEffect(1.4)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.black.opacity(0.15))
+                .overlay {
+                    // Global loading spinner over tabs (data fetching)
+                    if livestockModel.state.isLoading || operationsModel.state.isLoading {
+                        Color.black.opacity(0.18).ignoresSafeArea()
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(.white)
+                    }
                 }
+                .transition(.opacity)
+
+            // ── loading / signedOut / failed → Auth form
+            // (LOADING keeps the form visible so the user sees their inputs
+            //  while login is in progress; isLoading drives the button spinner)
+            default:
+                AuthFlowView(model: authModel)
+                    .background(wholeScreenBackground.ignoresSafeArea())
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.35), value: authModel.state.status)
+        // ── Floating toast overlay ────────────────────────────────────────────
+        .withToast()
+        // ── Route model errors → toast ────────────────────────────────────────
+        .onChange(of: authModel.state.errorMessage) { _, msg in
+            if let msg, !msg.isEmpty {
+                ToastManager.shared.show(msg, type: .error)
+                authModel.clearError()
+            }
+        }
+        .onChange(of: livestockModel.state.errorMessage) { _, msg in
+            if let msg, !msg.isEmpty {
+                ToastManager.shared.show(msg, type: .error)
+                livestockModel.clearError()
+            }
+        }
+        .onChange(of: operationsModel.state.errorMessage) { _, msg in
+            if let msg, !msg.isEmpty {
+                ToastManager.shared.show(msg, type: .error)
+                operationsModel.clearError()
             }
         }
     }
@@ -62,17 +102,28 @@ struct AuthFlowView: View {
                         dairyField("Mobile Number", text: $mobileNumber)
                             .keyboardType(.phonePad)
                         dairySecureField("Password", text: $password)
-                        Button("Login") {
+
+                        Button {
                             model.login(mobileNumber: mobileNumber, password: password)
+                        } label: {
+                            HStack(spacing: 10) {
+                                if model.state.isLoading {
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
+                                        .tint(.white)
+                                        .scaleEffect(0.85)
+                                }
+                                Text(model.state.isLoading ? "Logging in…" : "Login")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(Color(red: 0.29, green: 0.53, blue: 0.26))
-                        .frame(maxWidth: .infinity, alignment: .center)
+                        .disabled(model.state.isLoading)
                     }
 
-                    if let error = model.state.errorMessage, !error.isEmpty {
-                        Text(error).foregroundStyle(.red).font(.footnote)
-                    }
+                    // errors shown as toast — no inline text needed
                 }
                 .padding()
             }
@@ -139,34 +190,53 @@ struct MainTabView: View {
     @State private var staffEmail = ""
     @State private var staffPhone = ""
 
+    /// Convenience: the currently logged-in user's role.
+    private var role: UserRole? { authModel.state.currentRole }
+
     var body: some View {
         TabView {
+            // ── Always visible ────────────────────────────────────────────────
             DashboardTab(authModel: authModel, operationsModel: operationsModel)
                 .tabItem { Label("Dashboard", systemImage: "chart.bar.fill") }
 
-            LivestockTab(model: livestockModel)
-                .tabItem { Label("Livestock", systemImage: "hare.fill") }
+            // LIVESTOCK – ADMIN & DAIRY_MAN can manage; LABOUR sees read-only
+            if role == .admin || role == .dairyMan || role == .labour {
+                LivestockTab(authModel: authModel, model: livestockModel)
+                    .tabItem { Label("Livestock", systemImage: "hare.fill") }
+            }
 
-            OuterCenterTab(authModel: authModel, operationsModel: operationsModel)
-                .tabItem { Label("Outer Center", systemImage: "drop.fill") }
+            // OUTER CENTER – ADMIN & DAIRY_MAN can record; FARMER read-only
+            if role == .admin || role == .dairyMan || role == .farmer {
+                OuterCenterTab(authModel: authModel, operationsModel: operationsModel)
+                    .tabItem { Label("Outer Center", systemImage: "drop.fill") }
+            }
 
-            KhataTab(operationsModel: operationsModel)
-                .tabItem { Label("Khata", systemImage: "indianrupeesign.circle.fill") }
+            // KHATA – ADMIN & DAIRY_MAN & FARMER can view; only ADMIN edits
+            if role == .admin || role == .dairyMan || role == .farmer {
+                KhataTab(authModel: authModel, operationsModel: operationsModel)
+                    .tabItem { Label("Khata", systemImage: "indianrupeesign.circle.fill") }
+            }
 
-            InventoryTab(operationsModel: operationsModel)
-                .tabItem { Label("Inventory", systemImage: "shippingbox.fill") }
+            // INVENTORY – ADMIN & LABOUR & DAIRY_MAN
+            if role == .admin || role == .dairyMan || role == .labour {
+                InventoryTab(operationsModel: operationsModel)
+                    .tabItem { Label("Inventory", systemImage: "shippingbox.fill") }
+            }
 
-            FarmConfigTab(authModel: authModel)
-                .tabItem { Label("Farm Config", systemImage: "leaf.fill") }
+            // ── ADMIN-only tabs ───────────────────────────────────────────────
+            if role == .admin {
+                FarmConfigTab(authModel: authModel)
+                    .tabItem { Label("Farm Config", systemImage: "leaf.fill") }
 
-            StaffTab(
-                authModel:    authModel,
-                staffName:    $staffName,
-                staffEmail:   $staffEmail,
-                staffPhone:   $staffPhone,
-                selectedRole: $selectedRole
-            )
-            .tabItem { Label("Staff", systemImage: "person.2.fill") }
+                StaffTab(
+                    authModel:    authModel,
+                    staffName:    $staffName,
+                    staffEmail:   $staffEmail,
+                    staffPhone:   $staffPhone,
+                    selectedRole: $selectedRole
+                )
+                .tabItem { Label("Staff", systemImage: "person.2.fill") }
+            }
         }
         .accentColor(Color(red: 0.24, green: 0.81, blue: 0.57))
     }
@@ -276,12 +346,23 @@ struct DashboardTab: View {
 
 // ─── Tab 2: Livestock ─────────────────────────────────────────────────────────
 struct LivestockTab: View {
+    @ObservedObject var authModel: AuthScreenModel
     @ObservedObject var model: LivestockScreenModel
+
+    private var role: UserRole? { authModel.state.currentRole }
+    private var canManage: Bool  { role == .admin || role == .dairyMan }
+    private var canArchive: Bool { role == .admin }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+
+                    // ── Permission banner for LABOUR (read-only on Livestock) ──
+                    if role == .labour {
+                        permissionBanner("You have VIEW access to Livestock. Contact ADMIN for edit rights.", .yellow)
+                    }
+
                     // Status pills
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
@@ -306,6 +387,21 @@ struct LivestockTab: View {
                             }
                         }
                     }
+
+                    // ── Actions: only for ADMIN / DAIRY_MAN ───────────────────
+                    if canManage {
+                        dairyCard(title: "Livestock Actions") {
+                            HStack(spacing: 10) {
+                                livestockActionBtn("🔬 Log AI",     Color(red: 0.12, green: 0.49, blue: 0.42))
+                                livestockActionBtn("🩺 Log Health", Color(red: 0.49, green: 0.44, blue: 0.09))
+                            }
+                            // Archive is ADMIN-only
+                            if canArchive {
+                                livestockActionBtn("📦 Archive Animal", Color(red: 0.82, green: 0.30, blue: 0.34))
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                    }
                 }
                 .padding()
             }
@@ -318,6 +414,16 @@ struct LivestockTab: View {
                 }
             }
         }
+    }
+
+    private func livestockActionBtn(_ label: String, _ tint: Color) -> some View {
+        Button(label) {}
+            .font(.subheadline.bold())
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(tint.opacity(0.12))
+            .foregroundStyle(tint)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(tint.opacity(0.35), lineWidth: 1))
     }
 
     private func statusPill(summary: LivestockStatusSummary) -> some View {
@@ -477,11 +583,13 @@ struct OuterCenterTab: View {
 
 // ─── Tab 4: Khata ─────────────────────────────────────────────────────────────
 struct KhataTab: View {
+    @ObservedObject var authModel: AuthScreenModel
     @ObservedObject var operationsModel: OperationsScreenModel
     @State private var entryTitle  = ""
     @State private var amountText  = ""
     @State private var isIncome    = true
 
+    private var role: UserRole? { authModel.state.currentRole }
     private var income:  Double { operationsModel.state.ledgerEntries.filter { $0.kind == .income  }.reduce(0) { $0 + $1.amount } }
     private var expense: Double { operationsModel.state.ledgerEntries.filter { $0.kind == .expense }.reduce(0) { $0 + $1.amount } }
 
@@ -489,28 +597,32 @@ struct KhataTab: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    // Summary cards
+                    // Summary cards (visible to all)
                     HStack(spacing: 12) {
                         financeSummaryCard("Income",  "₹\(Int(income))",    Color(red: 0.24, green: 0.81, blue: 0.57))
                         financeSummaryCard("Expense", "₹\(Int(expense))",   Color(red: 0.82, green: 0.30, blue: 0.34))
                         financeSummaryCard("Net",     "₹\(Int(income - expense))", Color(red: 0.12, green: 0.23, blue: 0.37))
                     }
 
-                    // Add entry form
-                    dairyCard(title: "Add Entry") {
-                        Picker("Type", selection: $isIncome) {
-                            Text("Income").tag(true)
-                            Text("Expense").tag(false)
+                    // ── Add entry form: ADMIN only ────────────────────────────
+                    if role == .admin {
+                        dairyCard(title: "Add Manual Entry") {
+                            Picker("Type", selection: $isIncome) {
+                                Text("Income").tag(true)
+                                Text("Expense").tag(false)
+                            }
+                            .pickerStyle(.segmented)
+
+                            dairyField("Title (e.g. Milk payment)", text: $entryTitle)
+                            dairyField("Amount (₹)",                text: $amountText).keyboardType(.decimalPad)
+
+                            Button("Add to Khata") {}
+                                .buttonStyle(.borderedProminent)
+                                .tint(isIncome ? Color(red: 0.29, green: 0.53, blue: 0.26) : Color(red: 0.69, green: 0.17, blue: 0.22))
+                                .frame(maxWidth: .infinity)
                         }
-                        .pickerStyle(.segmented)
-
-                        dairyField("Title (e.g. Milk payment)", text: $entryTitle)
-                        dairyField("Amount (₹)",                text: $amountText).keyboardType(.decimalPad)
-
-                        Button("Add to Khata") {}
-                            .buttonStyle(.borderedProminent)
-                            .tint(isIncome ? Color(red: 0.29, green: 0.53, blue: 0.26) : Color(red: 0.69, green: 0.17, blue: 0.22))
-                            .frame(maxWidth: .infinity)
+                    } else {
+                        permissionBanner("Khata entries are auto-posted. Only ADMIN can add manual entries.", .blue)
                     }
 
                     // Ledger entries
@@ -670,12 +782,13 @@ struct FarmConfigTab: View {
     @State private var smsActive   = true
 
     private let providers = ["MSG91", "FAST2SMS", "TWILIO", "CUSTOM_HTTP"]
+    private var isAdmin: Bool { authModel.state.currentRole == .admin }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    // Farm info
+                    // Farm info (read-only for all)
                     if let farm = authModel.state.farmProfile {
                         dairyCard(title: "Farm Profile") {
                             recordRow(label: "Farm Name", value: farm.farmName)
@@ -683,35 +796,41 @@ struct FarmConfigTab: View {
                         }
                     }
 
-                    // Land partitions (placeholder)
+                    // Land partitions — ADMIN may edit
                     dairyCard(title: "Zameen / Land Setup") {
                         landRow("Green Fodder Block", "4.5 acres", "Napier Grass", Color(red: 0.24, green: 0.81, blue: 0.57))
                         landRow("Dry Storage",        "1.8 acres", "Hay & Feed",   Color(red: 0.91, green: 0.78, blue: 0.42))
                         landRow("Livestock Zone",     "2.2 acres", "Shed & Yard",  Color(red: 0.08, green: 0.31, blue: 0.37))
-                        Button("+ Add Land Partition") {}
-                            .font(.subheadline.bold())
-                            .foregroundStyle(Color(red: 0.24, green: 0.81, blue: 0.57))
+                        if isAdmin {
+                            Button("+ Add Land Partition") {}
+                                .font(.subheadline.bold())
+                                .foregroundStyle(Color(red: 0.24, green: 0.81, blue: 0.57))
+                        }
                     }
 
-                    // SMS Gateway
-                    dairyCard(title: "SMS Gateway Config") {
-                        Toggle("SMS Active", isOn: $smsActive)
-                            .tint(Color(red: 0.24, green: 0.81, blue: 0.57))
+                    // SMS Gateway — ADMIN only
+                    if isAdmin {
+                        dairyCard(title: "SMS Gateway Config") {
+                            Toggle("SMS Active", isOn: $smsActive)
+                                .tint(Color(red: 0.24, green: 0.81, blue: 0.57))
 
-                        Picker("Provider", selection: $smsProvider) {
-                            ForEach(providers, id: \.self) { p in
-                                Text(p).tag(p)
+                            Picker("Provider", selection: $smsProvider) {
+                                ForEach(providers, id: \.self) { p in
+                                    Text(p).tag(p)
+                                }
                             }
+                            .pickerStyle(.menu)
+
+                            dairyField("API Key", text: $apiKey)
+                            dairyField("Sender ID", text: $senderId)
+
+                            Button("Save Gateway Config") {}
+                                .buttonStyle(.borderedProminent)
+                                .tint(Color(red: 0.29, green: 0.53, blue: 0.26))
+                                .frame(maxWidth: .infinity)
                         }
-                        .pickerStyle(.menu)
-
-                        dairyField("API Key", text: $apiKey)
-                        dairyField("Sender ID", text: $senderId)
-
-                        Button("Save Gateway Config") {}
-                            .buttonStyle(.borderedProminent)
-                            .tint(Color(red: 0.29, green: 0.53, blue: 0.26))
-                            .frame(maxWidth: .infinity)
+                    } else {
+                        permissionBanner("SMS Gateway and land edits require ADMIN access.", .orange)
                     }
                 }
                 .padding()
@@ -751,7 +870,7 @@ struct StaffTab: View {
     @Binding var staffPhone:  String
     @Binding var selectedRole: UserRole
 
-    private let actorRole: UserRole? = .admin  // Real: read from authModel
+    private var actorRole: UserRole? { authModel.state.currentRole }
 
     var body: some View {
         NavigationStack {
@@ -794,13 +913,11 @@ struct StaffTab: View {
                         }
                     }
 
-                    // Permission matrix
-                    dairyCard(title: "Permission Matrix") {
-                        permissionRow("Dashboard",    "VIEW",    Color(red: 0.24, green: 0.81, blue: 0.57))
-                        permissionRow("Outer Center", "MANAGE",  Color(red: 0.12, green: 0.23, blue: 0.37))
-                        permissionRow("Khata",        "APPROVE", Color(red: 0.91, green: 0.78, blue: 0.42))
-                        permissionRow("Inventory",    "MANAGE",  Color(red: 0.49, green: 0.10, blue: 0.26))
-                        permissionRow("Staff",        "ADMIN",   Color(red: 0.82, green: 0.30, blue: 0.34))
+                    // Live permission matrix for the logged-in role
+                    dairyCard(title: "My Permissions — \(actorRole?.name.uppercased() ?? "UNKNOWN")") {
+                        ForEach(permissionMatrix(for: actorRole), id: \.0) { item in
+                            permissionRow(item.0, item.1, item.2)
+                        }
                     }
                 }
                 .padding()
@@ -838,6 +955,65 @@ struct StaffTab: View {
 
     private func allowedRoles(for actorRole: UserRole?) -> [UserRole] {
         actorRole == .admin ? [.dairyMan, .labour, .farmer] : [.farmer]
+    }
+
+    /// Returns (module name, level label, tint color) for the permission matrix.
+    private func permissionMatrix(for role: UserRole?) -> [(String, String, Color)] {
+        let green  = Color(red: 0.24, green: 0.81, blue: 0.57)
+        let amber  = Color(red: 0.91, green: 0.78, blue: 0.42)
+        let blue   = Color(red: 0.12, green: 0.23, blue: 0.37)
+        let red    = Color(red: 0.82, green: 0.30, blue: 0.34)
+        let muted  = Color(red: 0.60, green: 0.60, blue: 0.60)
+        let purple = Color(red: 0.49, green: 0.10, blue: 0.60)
+
+        switch role {
+        case .admin:
+            return [
+                ("Dashboard",    "APPROVE", purple),
+                ("Livestock",    "APPROVE", purple),
+                ("Outer Center", "APPROVE", purple),
+                ("Khata",        "APPROVE", purple),
+                ("Inventory",    "APPROVE", purple),
+                ("Farm Config",  "APPROVE", purple),
+                ("Staff",        "APPROVE", purple),
+                ("Reports",      "APPROVE", purple),
+            ]
+        case .dairyMan:
+            return [
+                ("Dashboard",    "VIEW",   green),
+                ("Livestock",    "MANAGE", blue),
+                ("Outer Center", "MANAGE", blue),
+                ("Khata",        "VIEW",   green),
+                ("Inventory",    "VIEW",   green),
+                ("Farm Config",  "NONE",   muted),
+                ("Staff",        "NONE",   muted),
+                ("Reports",      "VIEW",   green),
+            ]
+        case .labour:
+            return [
+                ("Dashboard",    "VIEW",   green),
+                ("Livestock",    "VIEW",   green),
+                ("Outer Center", "VIEW",   green),
+                ("Khata",        "NONE",   muted),
+                ("Inventory",    "MANAGE", blue),
+                ("Farm Config",  "NONE",   muted),
+                ("Staff",        "NONE",   muted),
+                ("Reports",      "NONE",   muted),
+            ]
+        case .farmer:
+            return [
+                ("Dashboard",    "VIEW",   green),
+                ("Livestock",    "NONE",   muted),
+                ("Outer Center", "VIEW",   green),
+                ("Khata",        "VIEW",   green),
+                ("Inventory",    "NONE",   muted),
+                ("Farm Config",  "NONE",   muted),
+                ("Staff",        "NONE",   muted),
+                ("Reports",      "VIEW",   green),
+            ]
+        default:
+            return [("(No role assigned)", "NONE", muted)]
+        }
     }
 }
 
@@ -911,6 +1087,29 @@ var wholeScreenBackground: some View {
             .offset(x: -90, y: 205)
     }
 }
+
+/// Inline banner shown when a feature is restricted for the current role.
+@ViewBuilder
+func permissionBanner(_ message: String, _ variant: PermissionBannerVariant) -> some View {
+    let (bg, fg, icon): (Color, Color, String) = {
+        switch variant {
+        case .yellow:  return (Color(red: 0.98, green: 0.96, blue: 0.87), Color(red: 0.65, green: 0.50, blue: 0.00), "lock.fill")
+        case .blue:    return (Color(red: 0.87, green: 0.93, blue: 0.98), Color(red: 0.10, green: 0.30, blue: 0.60), "eye.fill")
+        case .orange:  return (Color(red: 0.99, green: 0.94, blue: 0.86), Color(red: 0.65, green: 0.35, blue: 0.00), "exclamationmark.triangle.fill")
+        }
+    }()
+    HStack(spacing: 10) {
+        Image(systemName: icon).font(.subheadline).foregroundStyle(fg)
+        Text(message).font(.caption).foregroundStyle(fg)
+    }
+    .padding(12)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(bg)
+    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    .overlay(RoundedRectangle(cornerRadius: 12).stroke(fg.opacity(0.2), lineWidth: 1))
+}
+
+enum PermissionBannerVariant { case yellow, blue, orange }
 
 func color(from hex: String) -> Color {
     let clean = hex.replacingOccurrences(of: "#", with: "")

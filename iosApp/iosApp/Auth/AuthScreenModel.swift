@@ -80,6 +80,10 @@ final class AuthScreenModel: ObservableObject {
     func logout() {
         viewModel.logout()
     }
+
+    func clearError() {
+        viewModel.clearTransientMessage()
+    }
 }
 
 @MainActor
@@ -105,5 +109,13 @@ final class LivestockScreenModel: ObservableObject {
     deinit {
         handle?.close()
         viewModel.dispose()
+    }
+
+    func refresh() {
+        viewModel.refresh()
+    }
+
+    func clearError() {
+        viewModel.clearTransientMessage()
     }
 }

@@ -64,11 +64,13 @@ class LivestockViewModel(
         technicianName: String? = null,
         notes: String? = null,
     ) {
+        val actor = authRepository.currentAuthenticatedUser() ?: return
         val farmId = mutableUiState.value.farmId ?: return
         scope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, errorMessage = null)
             runCatching {
                 logInseminationUseCase(
+                    actor = actor,
                     farmId = farmId,
                     animalId = animalId,
                     aiDateEpochMillis = aiDateEpochMillis,
@@ -93,11 +95,13 @@ class LivestockViewModel(
         saleAmount: Double? = null,
         notes: String? = null,
     ) {
+        val actor = authRepository.currentAuthenticatedUser() ?: return
         val farmId = mutableUiState.value.farmId ?: return
         scope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, errorMessage = null)
             runCatching {
                 archiveAnimalUseCase(
+                    actor = actor,
                     farmId = farmId,
                     animalId = animalId,
                     reason = reason,
@@ -123,11 +127,13 @@ class LivestockViewModel(
         treatment: String? = null,
         severity: HealthSeverity = HealthSeverity.OBSERVATION,
     ) {
+        val actor = authRepository.currentAuthenticatedUser() ?: return
         val farmId = mutableUiState.value.farmId ?: return
         scope.launch {
             mutableUiState.value = mutableUiState.value.copy(isLoading = true, errorMessage = null)
             runCatching {
                 logHealthEventUseCase(
+                    actor = actor,
                     farmId = farmId,
                     animalId = animalId,
                     title = title,

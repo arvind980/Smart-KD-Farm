@@ -314,9 +314,70 @@
       background: linear-gradient(to right, transparent, #334155, transparent);
       margin: 52px 0 0;
     }
+
+    /* ── Floating Download FAB ── */
+    .dl-fab {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .dl-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 50px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      letter-spacing: 0.03em;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 6px 24px rgba(0,0,0,.55);
+    }
+    .dl-btn:hover  { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,.65); }
+    .dl-btn:active { transform: translateY(0);    box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+    .dl-pdf  { background: linear-gradient(135deg,#3CCF91,#22c55e); color: #082B2B; }
+    .dl-html { background: linear-gradient(135deg,#38bdf8,#0ea5e9); color: #082B2B; }
+    .dl-label { font-size: 0.75rem; opacity: .7; text-align: right; color: #94a3b8; margin-top: -4px; }
+
+    /* ── Print / Save-as-PDF styles ── */
+    @media print {
+      .dl-fab, .toc-nav { display: none !important; }
+      body {
+        background: #0a1628 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .hero { break-after: avoid; padding: 24px 16px; }
+      .page-section { max-width: 100%; padding: 16px; }
+      .diagram-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border-radius: 12px;
+      }
+      .roles-grid { break-inside: avoid; }
+      table { break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
+
+<!-- ── Floating Download FAB ── -->
+<div class="dl-fab">
+  <div class="dl-label">💾 Save flowchart</div>
+  <button class="dl-btn dl-pdf" onclick="window.print()">
+    🖨&nbsp; Save as PDF
+  </button>
+  <button class="dl-btn dl-html" onclick="downloadHtml()">
+    ⬇&nbsp; Download HTML
+  </button>
+</div>
 
 <!-- ── Hero ── -->
 <div class="hero">
@@ -1707,6 +1768,21 @@ sequenceDiagram
 </section>
 
 <script>
+  /* ── Download helpers ── */
+  function downloadHtml() {
+    // Capture current full document (includes rendered Mermaid SVGs)
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'Smart-KD-Farm-Flowchart.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   mermaid.initialize({
     startOnLoad: true,
     theme: 'dark',
