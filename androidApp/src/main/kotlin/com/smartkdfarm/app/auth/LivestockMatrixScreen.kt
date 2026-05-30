@@ -20,11 +20,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -79,9 +83,20 @@ private data class LivestockCardModel(
 )
 
 @Composable
-internal fun LivestockMatrixScreen() {
+internal fun LivestockMatrixScreen(
+    activeRole: DashboardRole = DashboardRole.ADMIN,
+    laborPermissions: LaborPermissions = LaborPermissions(
+        canAddAnimalMilk = true,
+        canMarkMilkingDone = true,
+        canMarkFeedDone = true,
+        canMarkCleaningDone = true,
+        canAddHealthObservation = true,
+    ),
+) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(LivestockFilter.ALL) }
+    var selectedAnimal by remember { mutableStateOf("Tag #01") }
+    var milkLitre by remember { mutableStateOf("") }
     val cards = remember {
         listOf(
             LivestockCardModel("Tag #01", "Murrah Buffalo", "5 yrs", LivestockStatus.MILKING, 95, "Last Yield", "12L"),
@@ -103,8 +118,8 @@ internal fun LivestockMatrixScreen() {
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         DashboardHeader(
-            title = "Livestock Matrix",
-            subtitle = "8 Animals",
+            title = if (activeRole == DashboardRole.LABOR) "Animal Work" else "Livestock Matrix",
+            subtitle = if (activeRole == DashboardRole.LABOR) "Restricted labor access" else "8 Animals",
             showSettings = false,
             onSettingsClick = {},
             leadingIcon = Icons.Filled.Pets,
@@ -187,6 +202,18 @@ internal fun LivestockMatrixScreen() {
                 }
             }
 
+            if (activeRole == DashboardRole.LABOR) {
+                LaborWorkPanel(
+                    permissions = laborPermissions,
+                    selectedAnimal = selectedAnimal,
+                    onAnimalChange = { selectedAnimal = it },
+                    milkLitre = milkLitre,
+                    onMilkChange = { milkLitre = it },
+                )
+            } else if (laborPermissions.canAddAnimalMilk) {
+                AnimalMilkEntryPanel(selectedAnimal, { selectedAnimal = it }, milkLitre, { milkLitre = it }, activeRole)
+            }
+
             cards.forEach { card ->
                 LivestockCard(
                     modifier = Modifier.fillMaxWidth(),
@@ -195,6 +222,183 @@ internal fun LivestockMatrixScreen() {
             }
         }
     }
+}
+
+@Composable
+private fun LaborWorkPanel(
+    permissions: LaborPermissions,
+    selectedAnimal: String,
+    onAnimalChange: (String) -> Unit,
+    milkLitre: String,
+    onMilkChange: (String) -> Unit,
+) {
+    Surface(
+        shape = RoundedCornerShape(32.dp),
+        color = GlassDark.copy(alpha = 0.96f),
+        border = BorderStroke(1.dp, Yellow.copy(alpha = 0.28f)),
+        shadowElevation = 10.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                DashboardGlowIcon(Icons.Filled.TaskAlt, Yellow, Yellow, modifier = Modifier.size(58.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Labor Work Entries", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
+                    Text("Sirf admin-approved kaam yahan entry ke liye dikh rahe hain.", color = Yellow, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            }
+            if (permissions.canAddAnimalMilk) {
+                AnimalMilkEntryPanel(selectedAnimal, onAnimalChange, milkLitre, onMilkChange, DashboardRole.LABOR)
+            }
+            if (permissions.canMarkMilkingDone) {
+                LaborActionEntry("Milking Done", "Morning / Evening milking complete mark", Icons.Filled.WaterDrop, Blue)
+            }
+            if (permissions.canMarkFeedDone) {
+                LaborActionEntry("Chara / TMR Done", "Feed distribution complete entry", Icons.Filled.TaskAlt, Mint)
+            }
+            if (permissions.canMarkCleaningDone) {
+                LaborActionEntry("Cleaning Done", "Shed, floor and water area cleaning", Icons.Filled.TaskAlt, Yellow)
+            }
+            if (permissions.canAddHealthObservation) {
+                LaborActionEntry("Health Observation", "Basic animal note, no financial access", Icons.Filled.HealthAndSafety, Red)
+            }
+            if (!permissions.canAddAnimalMilk &&
+                !permissions.canMarkMilkingDone &&
+                !permissions.canMarkFeedDone &&
+                !permissions.canMarkCleaningDone &&
+                !permissions.canAddHealthObservation
+            ) {
+                Text(
+                    "No labor work permission assigned. Admin can enable work entries from Staff Control.",
+                    color = WhiteSoft,
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp, lineHeight = 20.sp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LaborActionEntry(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    accent: Color,
+) {
+    Surface(
+        shape = RoundedCornerShape(24.dp),
+        color = accent.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, accent.copy(alpha = 0.22f)),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(icon, contentDescription = null, tint = accent, modifier = Modifier.size(25.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
+                Text(subtitle, color = WhiteSoft, fontSize = 12.sp)
+            }
+            Button(
+                onClick = {},
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = accent),
+            ) {
+                Text("Done", fontWeight = FontWeight.ExtraBold)
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnimalMilkEntryPanel(
+    selectedAnimal: String,
+    onAnimalChange: (String) -> Unit,
+    milkLitre: String,
+    onMilkChange: (String) -> Unit,
+    activeRole: DashboardRole,
+) {
+    Surface(
+        shape = RoundedCornerShape(30.dp),
+        color = GlassDark.copy(alpha = 0.96f),
+        border = BorderStroke(1.dp, Blue.copy(alpha = 0.28f)),
+        shadowElevation = 10.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                DashboardGlowIcon(Icons.Filled.WaterDrop, Blue, Blue, modifier = Modifier.size(58.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Animal-wise Milk Entry", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 19.sp)
+                    Text(
+                        if (activeRole == DashboardRole.LABOR) "Admin permission enabled for labor" else "Admin full access",
+                        color = Blue,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                LaborMilkField(
+                    value = selectedAnimal,
+                    onValueChange = onAnimalChange,
+                    label = "Pashu Tag",
+                    modifier = Modifier.weight(1f),
+                )
+                LaborMilkField(
+                    value = milkLitre,
+                    onValueChange = onMilkChange,
+                    label = "Milk Litre",
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Button(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Blue),
+            ) {
+                Icon(Icons.Filled.WaterDrop, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Save Milk Entry", fontWeight = FontWeight.ExtraBold)
+            }
+        }
+    }
+}
+
+@Composable
+private fun LaborMilkField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        label = { Text(label) },
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+            focusedContainerColor = Color.White.copy(alpha = 0.04f),
+            unfocusedContainerColor = Color.White.copy(alpha = 0.04f),
+            focusedBorderColor = Blue,
+            unfocusedBorderColor = Color.White.copy(alpha = 0.14f),
+            focusedLabelColor = Blue,
+            unfocusedLabelColor = WhiteSoft,
+            cursorColor = Blue,
+        ),
+        shape = RoundedCornerShape(18.dp),
+        singleLine = true,
+    )
 }
 
 @Composable

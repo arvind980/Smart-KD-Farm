@@ -24,8 +24,12 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,7 +48,10 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 internal fun DashboardHomeScreen(
+    activeRole: DashboardRole,
+    onRoleChange: (DashboardRole) -> Unit,
     onBackToLogin: () -> Unit,
+    onOpenModule: (DashboardModule) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -63,14 +70,15 @@ internal fun DashboardHomeScreen(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
-            GreetingBanner()
+            RoleSwitcher(activeRole = activeRole, onRoleChange = onRoleChange)
+            GreetingBanner(activeRole)
             SectionHeader("OVERVIEW", "Live Data", Mint)
             OverviewRow()
             SectionHeader("ALERTS", "2 Active", Red)
             AlertsColumn()
             ProductionCard()
             SectionHeader("QUICK ACTIONS", "View All", Mint)
-            QuickActionsRow()
+            QuickActionsRow(activeRole = activeRole, onOpenModule = onOpenModule)
             SectionHeader("RECENT ACTIVITY", "Today", WhiteSoft)
             RecentActivityCard()
         }
@@ -78,7 +86,41 @@ internal fun DashboardHomeScreen(
 }
 
 @Composable
-private fun GreetingBanner() {
+private fun RoleSwitcher(
+    activeRole: DashboardRole,
+    onRoleChange: (DashboardRole) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        DashboardRole.entries.forEach { role ->
+            val selected = role == activeRole
+            Surface(
+                onClick = { onRoleChange(role) },
+                shape = RoundedCornerShape(22.dp),
+                color = if (selected) Mint.copy(alpha = 0.18f) else GlassDark.copy(alpha = 0.92f),
+                border = BorderStroke(1.dp, if (selected) Mint.copy(alpha = 0.48f) else Color.White.copy(alpha = 0.10f)),
+            ) {
+                Text(
+                    text = "${role.label}  ${role.key}",
+                    color = if (selected) Mint else WhiteSoft,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 12.sp,
+                    ),
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GreetingBanner(activeRole: DashboardRole) {
     Surface(
         shape = RoundedCornerShape(30.dp),
         color = GlassDark.copy(alpha = 0.92f),
@@ -102,7 +144,7 @@ private fun GreetingBanner() {
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    "Good Evening, Admin",
+                    activeRole.greeting,
                     color = Color.White,
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.ExtraBold,
@@ -112,7 +154,7 @@ private fun GreetingBanner() {
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    "All systems running smoothly",
+                    "UI access is filtered for ${activeRole.key}",
                     color = Mint,
                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 13.sp),
                     maxLines = 1,
@@ -491,18 +533,51 @@ private fun RowScope.MetricMiniCard(
 }
 
 @Composable
-private fun QuickActionsRow() {
+private fun QuickActionsRow(
+    activeRole: DashboardRole,
+    onOpenModule: (DashboardModule) -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        QuickActionCard("Quick Doodh\nEntry", "Log milk collection", Blue, Icons.Filled.WaterDrop)
-        QuickActionCard("Quick Kharcha", "Add expense", Yellow, Icons.AutoMirrored.Filled.ReceiptLong)
-        QuickActionCard("Batch Feed", "Production log", Purple, Icons.Filled.Inventory2)
+        dashboardActions.forEach { action ->
+            val enabled = activeRole.canOpen(action.module)
+            QuickActionCard(
+                title = action.title,
+                subtitle = if (enabled) action.subtitle else "Locked for ${activeRole.label}",
+                accent = if (enabled) action.accent else WhiteSoft,
+                icon = if (enabled) action.icon else Icons.Filled.Lock,
+                enabled = enabled,
+            ) {
+                onOpenModule(action.module)
+            }
+        }
     }
 }
+
+private data class HomeAction(
+    val title: String,
+    val subtitle: String,
+    val accent: Color,
+    val icon: ImageVector,
+    val module: DashboardModule,
+)
+
+private val dashboardActions = listOf(
+    HomeAction("User Access", "4 roles and permissions", Mint, Icons.Filled.Shield, DashboardModule.ACCESS),
+    HomeAction("Outside Milk", "Farmer, litre, FAT/SNF", Blue, Icons.Filled.WaterDrop, DashboardModule.OUTSIDE_MILK),
+    HomeAction("Farmer Portal", "Own milk and hisaab", Purple, Icons.Filled.People, DashboardModule.FARMER_PORTAL),
+    HomeAction("Labor Tasks", "Chara, TMR, cleaning", Yellow, Icons.Filled.People, DashboardModule.LABOR_TASKS),
+    HomeAction("Admin CRUD", "Add, edit, delete data", Red, Icons.Filled.Shield, DashboardModule.ADMIN_CRUD),
+    HomeAction("Doodh Entry", "Farm milk and payment", Blue, Icons.Filled.WaterDrop, DashboardModule.MILK),
+    HomeAction("Feed Stock", "Ration and godam", Purple, Icons.Filled.Inventory2, DashboardModule.INVENTORY),
+    HomeAction("Health Alerts", "Vaccine and treatment", Red, Icons.Filled.HealthAndSafety, DashboardModule.HEALTH),
+    HomeAction("Reports", "Profit, EMI, subsidy", Mint, Icons.Filled.BarChart, DashboardModule.REPORTS),
+    HomeAction("Kharcha", "Labor, diesel, medicine", Yellow, Icons.AutoMirrored.Filled.ReceiptLong, DashboardModule.EXPENSES),
+)
 
 @Composable
 private fun QuickActionCard(
@@ -510,11 +585,14 @@ private fun QuickActionCard(
     subtitle: String,
     accent: Color,
     icon: ImageVector,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
 ) {
     Surface(
+        onClick = { if (enabled) onClick() },
         shape = RoundedCornerShape(30.dp),
-        color = GlassDark.copy(alpha = 0.95f),
-        border = BorderStroke(1.dp, accent.copy(alpha = 0.18f)),
+        color = GlassDark.copy(alpha = if (enabled) 0.95f else 0.68f),
+        border = BorderStroke(1.dp, accent.copy(alpha = if (enabled) 0.18f else 0.10f)),
         modifier = Modifier.width(190.dp),
     ) {
         Column(

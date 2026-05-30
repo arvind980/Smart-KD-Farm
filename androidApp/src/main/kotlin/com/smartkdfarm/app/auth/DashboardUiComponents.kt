@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Settings
@@ -179,6 +180,7 @@ internal fun DashboardGlowIcon(
 internal fun BottomDashboardNav(
     selectedTab: DashboardTab,
     onSelectTab: (DashboardTab) -> Unit,
+    canOpenTab: (DashboardTab) -> Boolean = { true },
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
@@ -197,11 +199,11 @@ internal fun BottomDashboardNav(
                     .padding(horizontal = 18.dp, vertical = 18.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                BottomNavItem(DashboardTab.HOME, selectedTab == DashboardTab.HOME) { onSelectTab(DashboardTab.HOME) }
-                BottomNavItem(DashboardTab.LIVESTOCK, selectedTab == DashboardTab.LIVESTOCK) { onSelectTab(DashboardTab.LIVESTOCK) }
+                BottomNavItem(DashboardTab.HOME, selectedTab == DashboardTab.HOME, canOpenTab(DashboardTab.HOME)) { onSelectTab(DashboardTab.HOME) }
+                BottomNavItem(DashboardTab.LIVESTOCK, selectedTab == DashboardTab.LIVESTOCK, canOpenTab(DashboardTab.LIVESTOCK)) { onSelectTab(DashboardTab.LIVESTOCK) }
                 androidx.compose.foundation.layout.Spacer(modifier = Modifier.size(56.dp))
-                BottomNavItem(DashboardTab.STAFF, selectedTab == DashboardTab.STAFF) { onSelectTab(DashboardTab.STAFF) }
-                BottomNavItem(DashboardTab.KHATA, selectedTab == DashboardTab.KHATA) { onSelectTab(DashboardTab.KHATA) }
+                BottomNavItem(DashboardTab.STAFF, selectedTab == DashboardTab.STAFF, canOpenTab(DashboardTab.STAFF)) { onSelectTab(DashboardTab.STAFF) }
+                BottomNavItem(DashboardTab.KHATA, selectedTab == DashboardTab.KHATA, canOpenTab(DashboardTab.KHATA)) { onSelectTab(DashboardTab.KHATA) }
             }
         }
 
@@ -229,6 +231,7 @@ internal fun BottomDashboardNav(
 private fun BottomNavItem(
     tab: DashboardTab,
     selected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit,
 ) {
     val contentColor = if (selected) Mint else Color.White.copy(alpha = 0.6f)
@@ -238,7 +241,7 @@ private fun BottomNavItem(
         shape = RoundedCornerShape(24.dp),
         color = background,
         border = if (selected) BorderStroke(1.dp, Mint.copy(alpha = 0.25f)) else null,
-        onClick = onClick,
+        onClick = { if (enabled) onClick() },
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 11.dp),
@@ -246,14 +249,18 @@ private fun BottomNavItem(
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Icon(
-                imageVector = if (selected) tab.selectedIcon else tab.unselectedIcon,
+                imageVector = if (enabled) {
+                    if (selected) tab.selectedIcon else tab.unselectedIcon
+                } else {
+                    Icons.Filled.Lock
+                },
                 contentDescription = null,
-                tint = contentColor,
+                tint = if (enabled) contentColor else Color.White.copy(alpha = 0.28f),
                 modifier = Modifier.size(26.dp),
             )
             Text(
                 text = tab.label,
-                color = contentColor,
+                color = if (enabled) contentColor else Color.White.copy(alpha = 0.28f),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                     fontSize = 12.sp,
